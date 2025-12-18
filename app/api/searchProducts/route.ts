@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/mock-db';
-import { merchantService } from '@/lib/mock-merchants';
-import { lazadaService } from '@/lib/lazada';
+import { db } from '@/src/ACP/mock-db';
+import { merchantService } from '@/src/ACP/mock-merchants';
+import { lazadaService } from '@/src/ACP/lazada';
 
 export async function GET(request: Request) {
     try {
