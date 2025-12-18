@@ -1,0 +1,119 @@
+openapi: 3.1.0
+info:
+  title: GoGoCash Agent API
+  description: API for searching products and tracking cashback.
+  version: 1.1.3
+servers:
+  - url: https://gogocash-acp.vercel.app
+    description: Production Server
+
+paths:
+  /api/linkWallet:
+    post:
+      operationId: linkWithMyWallet
+      summary: Link with my wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                wallet_address:
+                  type: string
+                  description: Ethereum-compatible wallet address (0x...)
+                  example: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+      responses:
+        "200":
+          description: Successful link
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_token:
+                    type: string
+                  message:
+                    type: string
+                  user:
+                    type: object
+  
+  /api/searchProducts:
+    get:
+      operationId: helpMeFindThisProduct
+      summary: Help me find this product!
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: session_token
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Token received from /linkWallet
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_name:
+                          type: string
+                          description: Name of the product or offer
+                        product_price:
+                          type: number
+                          description: Price of the product
+                        currency:
+                          type: string
+                          description: Currency code (e.g. USD, MYR)
+                        merchant_name:
+                          type: string
+                          description: Name of the merchant (e.g. Shopee, Amazon)
+                        cashback_rate:
+                          type: number
+                          description: Cashback rate as a decimal (e.g. 0.05 for 5%)
+                        rating:
+                          type: number
+                          description: Product rating (0-5)
+                        image_url:
+                          type: string
+                          description: URL of the product image. MUST be displayed to the user.
+                        affiliate_link:
+                          type: string
+                          description: The GoGoCash branded tracking link the user MUST click to earn cashback
+                        in_stock:
+                          type: boolean
+
+  /api/getCashback:
+    get:
+      operationId: checkCashbackProgress
+      summary: What's the progress for my cashback?
+      parameters:
+        - name: session_token
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Token received from /linkWallet
+      responses:
+        "200":
+          description: Cashback data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: object
+                  transactions:
+                    type: array
