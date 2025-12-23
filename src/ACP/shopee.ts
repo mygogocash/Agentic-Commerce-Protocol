@@ -63,6 +63,15 @@ export const shopeeService = {
                 cleanQuery = cleanQuery.replace(overMatch[0], '').trim();
             }
 
+            // Remove conversational filler
+            cleanQuery = cleanQuery
+                .replace(/\b(gift|ideas|idea|suggestion|recommendations?|recommend|best|top)\b/gi, '')
+                .replace(/\bgadgets?\b/gi, 'electronics') // Map gadget -> electronics
+                .trim();
+
+            console.log(`Original: "${query}" -> Clean: "${cleanQuery}"`);
+
+
             // If query became empty (e.g. user just typed "under 500"), prevent SQL error
             // Fallback to searching for "all" or handle gracefully. 
             // websearch_to_tsquery handles empty string by matching nothing usually, let's keep it safe.
