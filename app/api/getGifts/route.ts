@@ -44,13 +44,14 @@ export async function GET(request: Request) {
         console.log(`[ChristmasAction] Searching for: ${query}`);
 
         // 3. Search Merchants
-        const [realResults, mockResults, shopeeResults] = await Promise.all([
-            lazadaService.search(query),
-            merchantService.search(query),
+        // 3. Search Merchants - ENFORCED SHOPEE ONLY FOR PROTOCOL ALIGNMENT
+        const [shopeeResults] = await Promise.all([
+            // lazadaService.search(query), // DISABLED
+            // merchantService.search(query), // DISABLED
             shopeeService.search(query)
         ]);
 
-        const rawResults = [...realResults, ...shopeeResults, ...mockResults];
+        const rawResults = [...shopeeResults];
 
         // 4. Filter/Deduplicate/Sort
         // Prioritize items with high ratings for gifts
