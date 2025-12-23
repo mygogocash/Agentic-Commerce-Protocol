@@ -37,7 +37,7 @@ paths:
                     type: string
                   user:
                     type: object
-  
+
   /api/searchProducts:
     get:
       operationId: helpMeFindThisProduct
@@ -72,7 +72,10 @@ paths:
                           description: Name of the product or offer
                         product_price:
                           type: number
-                          description: Price of the product
+                          description: Price of the product in local currency (e.g. THB)
+                        product_price_usd:
+                          type: number
+                          description: Approximate price in USD
                         currency:
                           type: string
                           description: Currency code (e.g. USD, MYR)
@@ -159,7 +162,10 @@ paths:
                           description: Name of the product or offer
                         product_price:
                           type: number
-                          description: Price of the product
+                          description: Price of the product in local currency (e.g. THB)
+                        product_price_usd:
+                          type: number
+                          description: Approximate price in USD
                         currency:
                           type: string
                           description: Currency code (e.g. USD, MYR)
