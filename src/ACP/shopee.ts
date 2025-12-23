@@ -103,6 +103,35 @@ export const shopeeService = {
             `;
             
             const res = await pool.query(sql, params);
+
+             // --- FALLBACK MECHANISM ---
+            // If strict FTS returns 0, try broader "ILIKE" search (Force finding data)
+            if (res.rows.length === 0 && conditions.length === 1) { // Only fallback if no complex filters
+                console.log(`[Shopee] Strict search found 0. Trying fallback for: ${cleanQuery}`);
+                const fallbackSql = `
+                    SELECT * FROM shopee_products 
+                    WHERE product_name ILIKE $1 
+                    LIMIT 20;
+                `;
+                const fallbackResult = await pool.query(fallbackSql, [`%${cleanQuery}%`]);
+                return fallbackResult.rows.map(row => ({
+                    product_id: `shp_cloud_${row.itemid}`,
+                    product_name: row.title,
+                    product_price: parseFloat(row.price),
+                    product_price_usd: row.price_usd ? parseFloat(row.price_usd) : undefined,
+                    currency: row.currency,
+                    merchant_name: 'Shopee',
+                    merchant_logo: 'https://cf.shopee.co.th/file/38d3010b996b7d22f281e69974261899',
+                    image_url: row.image_url,
+                    product_url: row.product_url,
+                    rating: parseFloat(row.rating),
+                    reviews_count: row.sold,
+                    cashback_rate: 0.05,
+                    estimated_cashback: Number((parseFloat(row.price) * 0.05).toFixed(2)),
+                    affiliate_link: `https://gogocash-acp.vercel.app/api/redirect?url=${encodeURIComponent(row.affiliate_link || row.product_url)}`,
+                    in_stock: true
+                }));
+            }
             
             return res.rows.map(row => ({
                 product_id: `shp_cloud_${row.itemid}`,

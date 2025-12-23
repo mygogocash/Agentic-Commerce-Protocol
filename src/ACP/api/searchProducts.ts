@@ -39,19 +39,22 @@ export async function GET(request: Request) {
             );
         }
 
-        // 2. Search Merchants
+        // 2. Search Merchants - FORCED SHOPEE ONLY MODE
         const [lazadaResults, shopeeResults] = await Promise.all([
-            lazadaService.search(query),
+            // lazadaService.search(query), // DISABLED per user request
+            [], 
             shopeeService.search(query)
         ]);
 
-        let rawResults = [...lazadaResults, ...shopeeResults];
+        const rawResults = [...lazadaResults, ...shopeeResults];
         
-        // Fallback to mock data if no real results found (for demo continuity)
+        // Fallback to mock data DISABLED
+        /*
         if (rawResults.length === 0) {
              const mockResults = await merchantService.search(query);
              rawResults = [...mockResults];
         }
+        */
 
         // 3. Filter/Deduplicate/Sort (Simplified)
         // In a real app, we would dedupe by name similarity here.
