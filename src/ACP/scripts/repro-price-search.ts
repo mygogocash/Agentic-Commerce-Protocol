@@ -8,7 +8,7 @@ async function repro() {
     console.log('--- Reproduction: "headphones under $300" ---');
     
     // Test 1: Price Parsing
-    const query = "headphones under $300";
+    const query = "Sony Headphones";
     console.log(`\nSearching for: "${query}"`);
 
     const results = await shopeeService.search(query);

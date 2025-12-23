@@ -42,13 +42,6 @@ paths:
     post:
       operationId: unlinkAccount
       summary: Unlink current wallet session
-      parameters:
-        - name: session_token
-          in: header
-          required: false
-          schema:
-            type: string
-            description: Bearer token (preferred)
       requestBody:
         required: false
         content:
