@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/src/ACP/mock-db';
 import { merchantService } from '@/src/ACP/mock-merchants';
 import { lazadaService } from '@/src/ACP/lazada';
+import { shopeeService } from '@/src/ACP/shopee';
 
 export async function GET(request: Request) {
     try {
@@ -39,12 +40,18 @@ export async function GET(request: Request) {
         }
 
         // 2. Search Merchants
-        // Focus on Lazada only as per user request
-        const [realResults] = await Promise.all([
-            lazadaService.search(query)
+        const [lazadaResults, shopeeResults] = await Promise.all([
+            lazadaService.search(query),
+            shopeeService.search(query)
         ]);
 
-        const rawResults = [...realResults];
+        let rawResults = [...lazadaResults, ...shopeeResults];
+        
+        // Fallback to mock data if no real results found (for demo continuity)
+        if (rawResults.length === 0) {
+             const mockResults = await merchantService.search(query);
+             rawResults = [...mockResults];
+        }
 
         // 3. Filter/Deduplicate/Sort (Simplified)
         // In a real app, we would dedupe by name similarity here.
