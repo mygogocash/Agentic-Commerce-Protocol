@@ -1,6 +1,8 @@
 # Agentic Commerce Protocol
 
-**Status**: 🟢 Live & Integrated (Shopee + Involve Asia)
+# Agentic Commerce Protocol
+
+**Status**: 🟢 Live via GitHub (Shopee Enforced)
 
 ## Features
 - **Wallet Auth**: Link Ethereum wallet for session tracking.
