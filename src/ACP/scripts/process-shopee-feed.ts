@@ -54,6 +54,9 @@ const processFeed = async () => {
         const price = parseFloat(row.sale_price || row.price || '0');
         if (price <= 0) continue;
 
+        // Approx conversion
+        const price_usd = Number((price / 34).toFixed(2));
+
         const rating = parseFloat(row.item_rating || '0');
         if (rating < 4.0) continue; // High quality only
 
@@ -65,6 +68,7 @@ const processFeed = async () => {
             product_id: `shp_${row.itemid}`,
             product_name: row.title,
             product_price: price,
+            product_price_usd: price_usd,
             currency: 'THB', // Feed seems to be TH based on links
             merchant_name: 'Shopee',
             merchant_logo: 'https://cf.shopee.co.th/file/38d3010b996b7d22f281e69974261899',

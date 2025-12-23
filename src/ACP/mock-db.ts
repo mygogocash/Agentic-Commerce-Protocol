@@ -20,13 +20,16 @@ export interface Session {
 const globalForDb = globalThis as unknown as {
   mockUsers: User[];
   mockSessions: Session[];
+  revokedTokens: Set<string>; // Add blacklist
 };
 
 if (!globalForDb.mockUsers) globalForDb.mockUsers = [];
 if (!globalForDb.mockSessions) globalForDb.mockSessions = [];
+if (!globalForDb.revokedTokens) globalForDb.revokedTokens = new Set(); // Initialize
 
 const users = globalForDb.mockUsers;
 const sessions = globalForDb.mockSessions;
+const revokedTokens = globalForDb.revokedTokens;
 
 
 export const db = {
@@ -58,7 +61,7 @@ export const db = {
       // STATELESS TOKEN with Wallet info
       // Format: base64(userId:wallet:expiresAt) - JSON stringified
       const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
-      const payload = JSON.stringify({ uid: user_id, wal: wallet, exp: expires_at });
+      const payload = JSON.stringify({ uid: user_id, wal: wallet, exp: expires_at, jti: Date.now() }); // added jti for uniqueness
       const token = Buffer.from(payload).toString('base64');
 
       // We still push to memory for local dev consistency, but verification won't strictly require it
@@ -66,7 +69,15 @@ export const db = {
       sessions.push(newSession);
       return newSession;
     },
+    revoke: async (token: string): Promise<void> => {
+      revokedTokens.add(token);
+    },
     verify: async (token: string): Promise<User | null> => {
+      // 0. Check Blacklist
+      if (revokedTokens.has(token)) {
+         return null;
+      }
+
       try {
         // 1. Try generic decode
         const decoded = Buffer.from(token, 'base64').toString('utf-8');

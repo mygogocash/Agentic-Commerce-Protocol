@@ -70,7 +70,7 @@ export const shopeeService = {
                 reviews_count: row.sold,
                 cashback_rate: 0.05,
                 estimated_cashback: Number((parseFloat(row.price) * 0.05).toFixed(2)),
-                affiliate_link: row.affiliate_link || row.product_url,
+                affiliate_link: `https://gogocash-acp.vercel.app/api/redirect?url=${encodeURIComponent(row.affiliate_link || row.product_url)}`,
                 in_stock: true
             }));
 
