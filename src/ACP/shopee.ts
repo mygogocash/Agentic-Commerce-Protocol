@@ -44,17 +44,56 @@ export const shopeeService = {
         }
 
         try {
-            // Use websearch_to_tsquery for robust handling of user input (e.g. "sony headphones -black")
-            // It automatically handles operators and special chars better than raw to_tsquery
+            // 1. Initial Parsing
+            let cleanQuery = query;
+            let maxPrice: number | null = null;
+            let minPrice: number | null = null;
+
+            // Regex for "under $300", "below 300", "< 300"
+            const underMatch = query.match(/(?:under|below|<)\s?\$?(\d+)/i);
+            if (underMatch) {
+                maxPrice = parseInt(underMatch[1]);
+                cleanQuery = cleanQuery.replace(underMatch[0], '').trim();
+            }
+
+            // Regex for "over $300", "above 300", "> 300"
+            const overMatch = query.match(/(?:over|above|>)\s?\$?(\d+)/i);
+            if (overMatch) {
+                minPrice = parseInt(overMatch[1]);
+                cleanQuery = cleanQuery.replace(overMatch[0], '').trim();
+            }
+
+            // If query became empty (e.g. user just typed "under 500"), prevent SQL error
+            // Fallback to searching for "all" or handle gracefully. 
+            // websearch_to_tsquery handles empty string by matching nothing usually, let's keep it safe.
+            if (!cleanQuery) cleanQuery = "product"; 
+
+            // 2. Build SQL Query
+            const conditions: string[] = [`fts @@ websearch_to_tsquery('english', $1)`];
+            const params: any[] = [cleanQuery];
+            let paramIndex = 2;
+
+            if (maxPrice !== null) {
+                conditions.push(`price_usd <= $${paramIndex}`);
+                params.push(maxPrice);
+                paramIndex++;
+            }
+
+            if (minPrice !== null) {
+                conditions.push(`price_usd >= $${paramIndex}`);
+                params.push(minPrice);
+                paramIndex++;
+            }
+
             const sql = `
                 SELECT *, ts_rank(fts, websearch_to_tsquery('english', $1)) as rank
                 FROM shopee_products 
-                WHERE fts @@ websearch_to_tsquery('english', $1) 
+                WHERE ${conditions.join(' AND ')}
                 ORDER BY rank DESC 
                 LIMIT 20;
             `;
             
-            const res = await pool.query(sql, [query]);
+            const res = await pool.query(sql, params);
             
             return res.rows.map(row => ({
                 product_id: `shp_cloud_${row.itemid}`,
@@ -76,7 +115,6 @@ export const shopeeService = {
 
         } catch (err) {
             console.error('[ShopeeService] Cloud DB search error:', err);
-            // In strict mode, we return empty or throw, but do NOT fallback to stale local data.
             return [];
         }
     }
