@@ -1,47 +1,53 @@
-# Agentic Commerce Protocol (ACP) 🚀
+# 🛒 Agentic Commerce Protocol (ACP)
+> **AI-Powered Product Discovery & Cashback Engine**
 
-![Firebase](https://img.shields.io/badge/Hosting-Firebase-orange) ![Backend](https://img.shields.io/badge/Backend-Cloud%20Functions%20Gen2-blue) ![Database](https://img.shields.io/badge/Database-Firestore-yellow)
+[![Firebase Deployment](https://github.com/Start-up-Bangkok/Agentic-Commerce-Protocol/actions/workflows/firebase-hosting-merge.yml/badge.svg)](https://gogocash-acp.web.app)
+[![ChatGPT Ready](https://img.shields.io/badge/ChatGPT-Action_Ready-green)](https://gogocash-acp.web.app/openapi.yaml)
 
-**Agentic Commerce Protocol** is a next-generation e-commerce backend built on a **Pure Firebase** architecture. It is designed to be serverless, scalable, and AI-ready, enabling agentic access to product data, user profiles, and cashback rewards.
+ACP is a headless commerce backend built on **Firebase** (Firestore + Cloud Functions). It enables AI agents (like ChatGPT) to search for products and check cashback rewards in real-time.
 
-> **Status**: 🟢 Migration Complete (MongoDB & Vercel Removed)
+## 🚀 Key Features
+*   **Pure Firebase Architecture**: No MongoDB, no Vercel. 100% Serverless.
+*   **Agentic Search**: Keyword-based product discovery optimized for LLMs.
+*   **Massive Scale**: Capable of handling 19M+ product records via `upload-csv-to-firestore.ts`.
+*   **ChatGPT Integration**: Native OpenAPI support for Custom GPTs.
+*   **Analytics**: Integrated Firebase Analytics for user tracking.
 
-## 📚 Documentation
-Full documentation is available in the **[Project Wiki](https://github.com/mygogocash/Agentic-Commerce-Protocol/wiki)** (once initialized).
-*   **[Deployment Guide](https://github.com/mygogocash/Agentic-Commerce-Protocol/wiki/Deployment-Guide)**
-*   **[API Reference](https://github.com/mygogocash/Agentic-Commerce-Protocol/wiki/API-Reference)**
-*   **[Architecture Overview](https://github.com/mygogocash/Agentic-Commerce-Protocol/wiki/Architecture-Overview)**
+## 🛠️ Quick Start
 
-## 🌟 Key Features
-*   **Catalog**: 260,000+ Products indexed in Firestore.
-*   **Search**: High-performance parameterized search (`/api/searchProducts`).
-*   **User**: Persistent profiles with Email/Phone auth.
-*   **Cashback**: Real-time wallet linkage and transaction tracking.
+### 1. Prerequisites
+*   Node.js v20+
+*   Firebase CLI (`npm install -g firebase-tools`)
+*   `gcloud` CLI
 
-## 🛠️ Tech Stack
-*   **Frontend/API**: Next.js 16 (App Router)
-*   **Platform**: Firebase Hosting + Cloud Functions (Gen 2)
-*   **Database**: Google Cloud Firestore
-*   **Language**: TypeScript
-
-## 🚀 Getting Started
-
-### 1. Setup
+### 2. Setup
 ```bash
-git clone https://github.com/mygogocash/Agentic-Commerce-Protocol.git
-cd Agentic-Commerce-Protocol
 npm install
+cp .env.local.example .env.local
+# Add your FIREBASE_SERVICE_ACCOUNT_KEY to env
 ```
 
-### 2. Environment
-Copy `.env.local` (ensure you have the `NEXT_PUBLIC_FIREBASE_API_KEY` set).
-
-### 3. Deploy
-We use a unified script to clean, build, and deploy:
+### 3. Deployment
+We have a unified script that handles permissions, builds, and deployment:
 ```bash
-./deploy_to_firebase.sh
+./fix_and_deploy.sh
 ```
 
-## 🧹 Migration Notes
-*   **MongoDB**: Completely removed. Legacy data can be checked via `/api/check-mongo-user`.
-*   **Vercel**: Terminated. All hosting is now on Firebase.
+## 🤖 ChatGPT Integration
+1.  Create a Custom GPT.
+2.  Import OpenAPI Spec: `https://gogocash-acp.web.app/openapi.yaml`
+3.  Copy Instructions from: [`CHATGPT_INTEGRATION.md`](./CHATGPT_INTEGRATION.md)
+
+## 📊 Data Management
+*   **Upload Data**: Run `./run_daily_upload.sh` to upload CSV data to Firestore (Free Tier friendly).
+*   **Search Logic**: Located in `src/ACP/services/firestore.ts`.
+
+## 📂 Project Structure
+*   `src/ACP`: Core logic (Services, Config, Scripts).
+*   `app/api`: Next.js App Router API Enpoints (Cloud Functions).
+*   `public/openapi.yaml`: AI Agent Schema.
+
+## 📝 Documentation
+*   [Handover Status](./wiki_content/Handover_Status.md)
+*   [Large Data Strategy](./LARGE_DATA_STRATEGY.md)
+*   [ChatGPT Integration Guide](./CHATGPT_INTEGRATION.md)

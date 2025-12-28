@@ -3,7 +3,7 @@ import * as path from 'path';
 import { parse } from 'csv-parse';
 
 // --- CONFIGURATION ---
-const CSV_FILE_PATH = path.resolve(__dirname, '../../../data-feed/shopee_datafeed.csv');
+const CSV_FILE_PATH = path.resolve(process.cwd(), 'data-feed/shopee_datafeed.csv');
 const PROJECT_ID = 'gogocash-acp';
 const COLLECTION_NAME = 'products';
 let ACCESS_TOKEN = process.env.TEMP_ACCESS_TOKEN || "PLACEHOLDER_TOKEN";
@@ -13,7 +13,7 @@ const DAILY_LIMIT = 20000;    // Spark Plan limit (Free Tier)
 const BATCH_SIZE = 20;        // REST API batch limit
 
 import * as dotenv from 'dotenv';
-dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 async function getAccessToken() {
     if (process.env.FIREBASE_REFRESH_TOKEN) {
@@ -69,8 +69,8 @@ async function uploadCsvToFirestore() {
     let totalProcessed = 0;
     let successCount = 0;
 
-    const CHECKPOINT_FILE = path.resolve(__dirname, 'upload_checkpoint.json');
-    const DAILY_TRACKER_FILE = path.resolve(__dirname, 'daily_tracker.json');
+    const CHECKPOINT_FILE = path.resolve(process.cwd(), 'src/ACP/scripts/upload_checkpoint.json');
+    const DAILY_TRACKER_FILE = path.resolve(process.cwd(), 'src/ACP/scripts/daily_tracker.json');
 
     let lastProcessedIndex = 0;
     let recordsUploadedToday = 0;

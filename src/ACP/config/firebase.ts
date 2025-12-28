@@ -15,7 +15,17 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase (Singleton pattern to avoid re-initialization errors)
+// Initialize Firebase (Singleton pattern to avoid re-initialization errors)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-// const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null; 
+import { getAnalytics, isSupported } from "firebase/analytics";
 
-export { app };
+let analytics;
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
+
+export { app, analytics };
