@@ -30,3 +30,9 @@ firebase deploy --only hosting
 ## Troubleshooting
 *   **"Missing Permissions"**: Go to [GCP IAM](https://console.cloud.google.com/iam-admin) and grant "Cloud Build Service Account" to the `@cloudbuild` service account.
 *   **"Node Version Error"**: Ensure `package.json` has `"engines": { "node": "20" }`.
+
+## Vercel Migration (Terminated)
+This project previously ran on Vercel.
+*   **Status**: Terminated.
+*   **Action**: You can safely delete any `.vercel` folders or `vercel.json` files.
+*   **DNS**: If you bought a domain on Vercel, keep the account only for DNS management.
