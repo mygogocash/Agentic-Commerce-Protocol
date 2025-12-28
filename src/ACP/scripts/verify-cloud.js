@@ -1,52 +1,81 @@
+
 const VALID_WALLET = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0";
 const TARGET_URL = process.argv[2] || process.env.TARGET_URL || "https://gogocash-acp.vercel.app";
 
 async function verify() {
     try {
-        console.log(`--- Shopee Cloud Integration Verification [Target: ${TARGET_URL}] ---`);
+        console.log(`--- GogoCash Cloud Verification [Target: ${TARGET_URL}] ---`);
         
-        // 1. Link Wallet
+        // --- 1. SEARCH/LEGACY CHECK ---
+        // (This might fail if DB is empty, but shouldn't crash script)
+        console.log('\n[1] Verify Legacy Search (Optional)...');
+        // Get temp token via wallet
         const linkRes = await fetch(`${TARGET_URL}/api/linkWallet`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ wallet_address: VALID_WALLET }),
         });
-        const linkData = await linkRes.json();
-        const token = linkData.session_token;
-
-        // 2. Search
-        const query = 'shirt'; 
-        console.log(`Searching for: "${query}"`);
-
-        const res = await fetch(`${TARGET_URL}/api/searchProducts?query=${query}`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-        const data = await res.json();
         
-        console.log(`Found ${data.results.length} results.`);
-        
-        const cloudItems = data.results.filter(p => p.product_id && p.product_id.startsWith('shp_cloud_'));
-        
-        if (cloudItems.length > 0) {
-            console.log('✅ SUCCESS: Found items from Cloud Database!');
-            const item = cloudItems[0];
-            console.log(`Sample: ${item.product_name} (${item.product_id})`);
-            console.log(`Price: THB ${item.product_price} / USD ${item.product_price_usd}`);
-            if (!item.product_price_usd) console.warn('⚠️  Warning: USD Price missing!');
-        } else {
-            console.log('⚠️  Note: Items returning provided by Local Fallback (or migration not ready yet).');
-            const shopeeItems = data.results.filter(p => p.merchant_name === 'Shopee');
-            if (shopeeItems.length > 0) {
-                 const item = shopeeItems[0];
-                 console.log(`Sample Local Item: ${item.product_id}`);
-                 console.log(`Price: THB ${item.product_price} / USD ${item.product_price_usd}`);
+        if (linkRes.ok) {
+            const linkData = await linkRes.json();
+            const token = linkData.session_token;
+            console.log('   ✓ Wallet Link Success');
+            
+            const searchRes = await fetch(`${TARGET_URL}/api/searchProducts?query=shirt`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            
+            if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                console.log(`   ✓ Search Endpoint Reachable. Results: ${searchData.results.length}`);
+            } else {
+                 console.log(`   ⚠️ Search Endpoint Error: ${searchRes.status}`);
             }
+        } else {
+            console.log(`   ⚠️ Wallet Link Failed: ${linkRes.status}`);
         }
 
+        // --- 2. NEW AUTH & BACKEND CHECK ---
+        console.log('\n[2] Verify New Auth & Backend (Critical)...');
+        
+        // Login with Email
+        console.log('   2a. Testing Email Login...');
+        const authRes = await fetch(`${TARGET_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: "cloud_test@gogocash.com" })
+        });
+        
+        if (!authRes.ok) throw new Error(`Auth Failed: ${authRes.status}`);
+        const authData = await authRes.json();
+        const authToken = authData.session_token;
+        console.log('   ✅ Login Successful');
+
+        // Fetch Profile
+        console.log('   2b. Testing Profile Fetch...');
+        const profileRes = await fetch(`${TARGET_URL}/api/user/profile`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!profileRes.ok) throw new Error(`Profile Fetch Failed: ${profileRes.status}`);
+        const profileData = await profileRes.json();
+        console.log(`   ✅ Profile Fetched. Balance: ${profileData.user.balance}`);
+        console.log(`   ✅ ID: ${profileData.user.id}`);
+
+        // Fetch Cashback
+        console.log('   2c. Testing Cashback History...');
+        const cbRes = await fetch(`${TARGET_URL}/api/user/cashback`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!cbRes.ok) throw new Error(`Cashback Fetch Failed: ${cbRes.status}`);
+        const cbData = await cbRes.json();
+        console.log(`   ✅ Cashback History Fetched: ${cbData.cashbacks.length} items (New users start with 0)`);
+
+        console.log('\n✅✅✅ VERIFICATION COMPLETE: AUTH & BACKEND OPERATIONAL ✅✅✅');
+
     } catch (error) {
-        console.error('Verification failed:', error);
+        console.error('\n❌ Verification failed:', error);
+        process.exit(1);
     }
 }
 
