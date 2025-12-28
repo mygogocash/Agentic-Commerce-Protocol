@@ -29,30 +29,32 @@ export const shopeeService = {
      * Search stub - Returns empty array until Firestore search is ready
      */
     search: async (query: string): Promise<Product[]> => {
-        console.log(`[Shopee] Search received for "${query}" - MongoDB is removed. Returning mock/empty.`);
-        
-        // Return a few static results for "gift" or general queries so the UI doesn't look broken
-        if (query.match(/gift|idea/i)) {
-            return [
-                {
-                    product_id: 'stub_1',
-                    product_name: "Samsung Galaxy Watch 6 (Migration Placeholder)",
-                    product_price: 9900,
-                    currency: "THB",
-                    merchant_name: "Shopee",
-                    merchant_logo: "https://cf.shopee.co.th/file/38d3010b996b7d22f281e69974261899",
-                    image_url: "https://down-th.img.susercontent.com/file/th-11134207-7r98o-ll09u434253q3d",
-                    product_url: "https://shopee.co.th",
-                    rating: 4.8,
-                    reviews_count: 100,
-                    cashback_rate: 0.05,
-                    estimated_cashback: 495,
-                    affiliate_link: "https://shopee.co.th",
-                    in_stock: true
-                }
-            ];
-        }
+        try {
+            // Import dynamically to avoid circular deps if any, or just import at top if clean
+            // Assuming firestoreService is available. 
+            // Note: We need to map Firestore raw data to Product interface
+            const rawProducts = await import('./services/firestore').then(m => m.firestoreService.products.search(query));
+            
+            return rawProducts.map((p: any) => ({
+                product_id: p.itemid,
+                product_name: p.title,
+                product_price: p.price,
+                currency: "THB",
+                merchant_name: "Shopee", // Hardcoded for now
+                merchant_logo: "https://cf.shopee.co.th/file/38d3010b996b7d22f281e69974261899",
+                image_url: p.image_url,
+                product_url: p.product_url,
+                rating: p.rating,
+                reviews_count: p.sold, // best guess mapping
+                cashback_rate: 0.05, // default
+                estimated_cashback: (p.price || 0) * 0.05,
+                affiliate_link: p.product_url,
+                in_stock: true
+            }));
 
-        return [];
+        } catch (error) {
+            console.error("Firestore Search Failed:", error);
+            return [];
+        }
     }
 };

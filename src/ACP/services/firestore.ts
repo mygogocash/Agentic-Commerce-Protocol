@@ -90,5 +90,20 @@ export const firestoreService = {
             
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
+    },
+    
+    products: {
+         search: async (query: string, limit: number = 20) => {
+             // 1. Tokenize query
+             const keyword = query.toLowerCase().split(' ')[0]; // Basic single-keyword match
+             
+             // 2. Query Firestore 'products' collection
+             const snapshot = await db.collection('products')
+                 .where('keywords', 'array-contains', keyword)
+                 .limit(limit)
+                 .get();
+             
+             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+         }
     }
 };

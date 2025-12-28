@@ -8,8 +8,9 @@ const PROJECT_ID = 'gogocash-acp';
 const COLLECTION_NAME = 'products';
 let ACCESS_TOKEN = process.env.TEMP_ACCESS_TOKEN || "PLACEHOLDER_TOKEN";
 
-const MAX_RECORDS = 500000; // Increased limit for bulk upload
-const BATCH_SIZE = 20;    // REST API batch limit
+const MAX_RECORDS = 20000000; // Total dataset limit
+const DAILY_LIMIT = 20000;    // Spark Plan limit (Free Tier)
+const BATCH_SIZE = 20;        // REST API batch limit
 
 import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
@@ -68,18 +69,64 @@ async function uploadCsvToFirestore() {
     let totalProcessed = 0;
     let successCount = 0;
 
-const SKIP_RECORDS = 235000; // Resume point (Quota Hit)
+    const CHECKPOINT_FILE = path.resolve(__dirname, 'upload_checkpoint.json');
+    const DAILY_TRACKER_FILE = path.resolve(__dirname, 'daily_tracker.json');
+
+    let lastProcessedIndex = 0;
+    let recordsUploadedToday = 0;
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // Load Checkpoint
+    if (fs.existsSync(CHECKPOINT_FILE)) {
+        try {
+            const data = JSON.parse(fs.readFileSync(CHECKPOINT_FILE, 'utf8'));
+            lastProcessedIndex = data.lastProcessedIndex || 0;
+            console.log(`Resuming from checkpoint: Record #${lastProcessedIndex}`);
+        } catch (e) { console.warn("Invalid checkpoint file."); }
+    }
+
+    // Load Daily Tracker
+    if (fs.existsSync(DAILY_TRACKER_FILE)) {
+        try {
+            const data = JSON.parse(fs.readFileSync(DAILY_TRACKER_FILE, 'utf8'));
+            if (data.date === today) {
+                recordsUploadedToday = data.count || 0;
+                console.log(`Already uploaded today: ${recordsUploadedToday} records.`);
+            } else {
+                console.log(`New day detected (${today}). Resetting daily counter.`);
+            }
+        } catch (e) {
+            console.warn("Invalid daily tracker, starting fresh count for today.");
+        }
+    }
+
+    if (recordsUploadedToday >= DAILY_LIMIT) {
+        console.log(`\n🛑 Daily Limit of ${DAILY_LIMIT} reached for ${today}. Come back tomorrow to keep it free!`);
+        return;
+    }
 
     for await (const record of parser) {
-        if (totalProcessed < SKIP_RECORDS) {
-            totalProcessed++;
-            continue;
+        totalProcessed++;
+
+        // Fast-forward to checkpoint
+        if (totalProcessed <= lastProcessedIndex) continue;
+        
+        // Safety Limits
+        if (totalProcessed > MAX_RECORDS) break;
+        if (recordsUploadedToday >= DAILY_LIMIT) {
+             console.log(`\n🛑 Reached Daily Limit (${DAILY_LIMIT}). Stopping for Free Tier compliance.`);
+             break;
         }
-        if (totalProcessed >= MAX_RECORDS) break;
 
         // Map CSV fields to Firestore Document
-        // Firestore REST API requires specific format: { fields: { key: { stringValue: val } } }
         const docId = record.itemid || `auto_${totalProcessed}`;
+        // Generate Search Keywords (naive tokenization)
+        const rawTitle = (record.title || '').toLowerCase();
+        // Split by spaces, remove special chars, filter empty
+        let keywords = rawTitle.replace(/[^\w\s\u0E00-\u0E7F]/g, '').split(/\s+/);
+        // Limit to 10 keywords to save index space
+        keywords = [...new Set(keywords)].slice(0, 10);
+
         const fields: any = {
             itemid: { stringValue: record.itemid || '' },
             title: { stringValue: record.title || '' },
@@ -89,16 +136,24 @@ const SKIP_RECORDS = 235000; // Resume point (Quota Hit)
             shopid: { stringValue: record.shopid || '' },
             rating: { doubleValue: record.item_rating ? parseFloat(record.item_rating) : 0 },
             sold: { integerValue: record.item_sold ? parseInt(record.item_sold) : 0 },
-            uploadedAt: { timestampValue: new Date().toISOString() }
+            uploadedAt: { timestampValue: new Date().toISOString() },
+            keywords: { arrayValue: { values: keywords.map((k: string) => ({ stringValue: k })) } }
         };
 
         buffer.push({ docId, fields });
-        totalProcessed++;
 
         if (buffer.length >= BATCH_SIZE) {
             await commitBatch(buffer);
-            successCount += buffer.length;
-            process.stdout.write(`\rProgress: ${successCount} / ${MAX_RECORDS} uploaded...`);
+            const count = buffer.length;
+            successCount += count;
+            recordsUploadedToday += count;
+            
+            process.stdout.write(`\r[${today}] Today: ${recordsUploadedToday}/${DAILY_LIMIT} | Total: ${totalProcessed} | Uploaded: ${successCount}`);
+            
+            // Save State
+            fs.writeFileSync(CHECKPOINT_FILE, JSON.stringify({ lastProcessedIndex: totalProcessed }));
+            fs.writeFileSync(DAILY_TRACKER_FILE, JSON.stringify({ date: today, count: recordsUploadedToday }));
+
             buffer = [];
         }
     }
