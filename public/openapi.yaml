@@ -8,7 +8,7 @@ servers:
     description: Production Server
 
 paths:
-  /api/auth/login:
+  /api/login:
     post:
       operationId: loginUser
       summary: Login or Register with Email/Phone

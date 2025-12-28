@@ -68,7 +68,7 @@ Support for stateless session tokens via multiple methods.
 
 **Login with Email/Phone:**
 ```http
-POST /api/auth/login
+POST /api/login
 { "email": "user@example.com" }
 // OR
 { "phone": "+66812345678" }
