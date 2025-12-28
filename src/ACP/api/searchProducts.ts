@@ -16,21 +16,22 @@ export async function GET(request: Request) {
         }
 
         // 1. Validation
-        if (!token) {
-            return NextResponse.json(
-                { error: 'Unauthorized: Missing session_token' },
-                { status: 401 }
-            );
+        // 1. Auth Check (Optional)
+        // We allow public search, but if a token is provided, we verify it.
+        let user = null;
+        if (token) {
+            user = await db.sessions.verify(token);
+            // If token provided but invalid -> we could 401 OR just ignore. 
+            // For better UX, let's ignore invalid token and treat as guest, or strict 401 if they tried to auth.
+            // Let's go with: if token provided, it MUST be valid.
+            if (!user) {
+                 return NextResponse.json(
+                    { error: 'Session expired. Please login again.' },
+                    { status: 401 }
+                );
+            }
         }
 
-        const user = await db.sessions.verify(token);
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'Session expired. Please link account again.' },
-                { status: 401 }
-            );
-        }
 
         if (!query) {
             return NextResponse.json(

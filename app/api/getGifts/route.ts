@@ -18,22 +18,19 @@ export async function GET(request: Request) {
             token = searchParams.get('session_token') || undefined;
         }
 
-        // 1. Validation
-        if (!token) {
-            return NextResponse.json(
-                { error: 'Unauthorized: Missing session_token' },
-                { status: 401 }
-            );
+        // 1. Auth Check (Optional)
+        // We allow public search, but if a token is provided, we verify it.
+        let user = null;
+        if (token) {
+            user = await db.sessions.verify(token);
+            if (!user) {
+                 return NextResponse.json(
+                    { error: 'Session expired. Please login again.' },
+                    { status: 401 }
+                );
+            }
         }
 
-        const user = await db.sessions.verify(token);
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'Session expired. Please link account again.' },
-                { status: 401 }
-            );
-        }
 
         // 2. Construct Search Query
         let query = `Christmas gift for ${recipient}`;
