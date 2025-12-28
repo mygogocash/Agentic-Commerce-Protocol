@@ -46,15 +46,22 @@ cp .env.example .env.local
 npm run dev
 ```
 
-### ☁️ Deployment (CI/CD)
+### ☁️ Deployment
 
-We use a GitOps workflow:
-1. **GitHub Actions (CI)**: Automatically lints, builds, and tests logic on every push.
-2. **Vercel (CD)**: Automatically deploys main branch to Production.
-
-To deploy manually:
+#### Option 1: Vercel (Recommended)
+Atomic deployments with zero configuration.
 ```bash
 npx vercel --prod
+```
+
+#### Option 2: Firebase Hosting
+Deploy static assets and serverless functions to Firebase.
+```bash
+# 1. Login
+firebase login
+
+# 2. Deploy
+firebase deploy
 ```
 
 ---
@@ -125,11 +132,16 @@ Copy the [Agent Instructions](agent_instructions.md) into your bot's system prom
 - **Primary**: Connects to MongoDB Atlas for persistent storage.
 - **Fallback**: Automatically switches to In-Memory arrays if MongoDB is unreachable or unconfigured. This ensures the app **always works** for testing and demos.
 
-**Stack**:
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Auth**: Stateless JWT-like Sessions
-- **Search**: MongoDB Atlas Search (Fuzzy Matching) + Regex Fallback
+## 🛠 Tech Stack
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Database**: 
+  - **Primary**: MongoDB Atlas (Product Search Engine)
+  - **User/Auth**: Firebase (Auth & Firestore - *In Progress*)
+- **Hosting**: 
+  - Vercel (Current Production)
+  - Firebase Hosting (Alternative/Migration Target)
+- **Deployment**: GitHub Actions (CI), Vercel/Firebase (CD)
+Fuzzy Matching) + Regex Fallback
 
 ---
 
