@@ -1,11 +1,12 @@
 const VALID_WALLET = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0";
+const TARGET_URL = process.argv[2] || process.env.TARGET_URL || "https://gogocash-acp.vercel.app";
 
 async function verify() {
     try {
-        console.log('--- Shopee Cloud Integration Verification ---');
+        console.log(`--- Shopee Cloud Integration Verification [Target: ${TARGET_URL}] ---`);
         
         // 1. Link Wallet
-        const linkRes = await fetch('http://localhost:3000/api/linkWallet', {
+        const linkRes = await fetch(`${TARGET_URL}/api/linkWallet`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ wallet_address: VALID_WALLET }),
@@ -17,7 +18,7 @@ async function verify() {
         const query = 'shirt'; 
         console.log(`Searching for: "${query}"`);
 
-        const res = await fetch(`http://localhost:3000/api/searchProducts?query=${query}`, {
+        const res = await fetch(`${TARGET_URL}/api/searchProducts?query=${query}`, {
             headers: { 'Authorization': `Bearer ${token}` },
         });
 

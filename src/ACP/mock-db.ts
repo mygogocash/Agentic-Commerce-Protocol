@@ -1,12 +1,23 @@
-
-// lib/mock-db.ts
+import { getCollection } from './lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export interface User {
   id: string;
-  wallet_address: string;
+  wallet_address?: string;
+  email?: string;
+  phone?: string;
   joined_at: string;
+  balance: number; // Added from gogocash schema
   go_points: number;
   go_tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+}
+
+export interface UserMyCashback {
+    id: string;
+    userId: string;
+    cashback_amount: number;
+    status: 'pending' | 'approved' | 'rejected';
+    created_at: string;
 }
 
 export interface Session {
@@ -16,18 +27,21 @@ export interface Session {
 }
 
 
-// In-memory storage
+// In-memory storage (Fallback)
 const globalForDb = globalThis as unknown as {
   mockUsers: User[];
+  mockCashbacks: UserMyCashback[];
   mockSessions: Session[];
   revokedTokens: Set<string>; // Add blacklist
 };
 
 if (!globalForDb.mockUsers) globalForDb.mockUsers = [];
+if (!globalForDb.mockCashbacks) globalForDb.mockCashbacks = [];
 if (!globalForDb.mockSessions) globalForDb.mockSessions = [];
 if (!globalForDb.revokedTokens) globalForDb.revokedTokens = new Set(); // Initialize
 
 const users = globalForDb.mockUsers;
+const cashbacks = globalForDb.mockCashbacks;
 const sessions = globalForDb.mockSessions;
 const revokedTokens = globalForDb.revokedTokens;
 
@@ -35,33 +49,129 @@ const revokedTokens = globalForDb.revokedTokens;
 export const db = {
   users: {
     findByWallet: async (wallet_address: string): Promise<User | null> => {
-      return users.find((u) => u.wallet_address.toLowerCase() === wallet_address.toLowerCase()) || null;
+      const col = await getCollection('users');
+      if (col) {
+          const doc = await col.findOne({ wallet_address: { $regex: new RegExp(`^${wallet_address}$`, 'i') } });
+          return doc ? mapDocToUser(doc) : null;
+      }
+      return users.find((u) => u.wallet_address?.toLowerCase() === wallet_address.toLowerCase()) || null;
     },
-    create: async (wallet_address: string): Promise<User> => {
+    findByEmail: async (email: string): Promise<User | null> => {
+        const col = await getCollection('users');
+        if (col) {
+            const doc = await col.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
+            return doc ? mapDocToUser(doc) : null;
+        }
+        return users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) || null;
+    },
+    findByPhone: async (phone: string): Promise<User | null> => {
+        const col = await getCollection('users');
+        if (col) {
+            const doc = await col.findOne({ phone: phone });
+            return doc ? mapDocToUser(doc) : null;
+        }
+        return users.find((u) => u.phone === phone) || null;
+    },
+    create: async (data: { wallet_address?: string, email?: string, phone?: string }): Promise<User> => {
+      const newUserBase = {
+        joined_at: new Date().toISOString(),
+        balance: 0, 
+        go_points: 100, 
+        go_tier: 'Bronze',
+        ...data
+      };
+
+      const col = await getCollection('users');
+      if (col) {
+          const result = await col.insertOne(newUserBase);
+          return { id: result.insertedId.toString(), ...newUserBase } as unknown as User;
+      }
+
+      // Fallback
       const newUser: User = {
         id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        wallet_address,
-        joined_at: new Date().toISOString(),
-        go_points: 100, // Bonus for new users
-        go_tier: 'Bronze',
-      };
+        ...newUserBase
+      } as User;
       users.push(newUser);
       return newUser;
     },
     findById: async (id: string): Promise<User | null> => {
+      const col = await getCollection('users');
+      if (col) {
+          try {
+            const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { id: id };
+            const doc = await col.findOne(query);
+            return doc ? mapDocToUser(doc) : null;
+          } catch (e) { return null; }
+      }
       return users.find((u) => u.id === id) || null;
     },
   },
+  cashbacks: {
+      create: async (userId: string, amount: number): Promise<UserMyCashback> => {
+          const newCashbackBase = {
+              userId,
+              cashback_amount: amount,
+              status: 'pending',
+              created_at: new Date().toISOString()
+          };
+
+          const col = await getCollection('usermycashbacks');
+          if (col) {
+              const result = await col.insertOne(newCashbackBase);
+              
+              // Update User Balance in DB
+              const usersCol = await getCollection('users');
+              if (usersCol) {
+                  const query = ObjectId.isValid(userId) ? { _id: new ObjectId(userId) } : { id: userId };
+                  await usersCol.updateOne(query, { $inc: { balance: amount } });
+              }
+
+              return { id: result.insertedId.toString(), ...newCashbackBase } as unknown as UserMyCashback;
+          }
+
+          // Fallback
+          const newCashback: UserMyCashback = {
+              id: `cb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              ...newCashbackBase
+          } as UserMyCashback;
+          cashbacks.push(newCashback);
+          
+          // Update user balance (memory)
+          const user = users.find(u => u.id === userId);
+          if (user) {
+              user.balance += amount;
+          }
+          
+          return newCashback;
+      },
+      findByUser: async (userId: string): Promise<UserMyCashback[]> => {
+          const col = await getCollection('usermycashbacks');
+          if (col) {
+              const docs = await col.find({ userId }).toArray();
+              return docs.map(d => ({ ...d, id: d._id.toString() })) as unknown as UserMyCashback[];
+          }
+          return cashbacks.filter(c => c.userId === userId);
+      }
+  },
   sessions: {
     create: async (user_id: string): Promise<Session> => {
-      // Look up user to get wallet info (if available in memory at creation time)
-      const user = users.find(u => u.id === user_id);
-      const wallet = user ? user.wallet_address : '';
-
-      // STATELESS TOKEN with Wallet info
-      // Format: base64(userId:wallet:expiresAt) - JSON stringified
+      // Look up user to get info (from Hybrid)
+      const user = await db.users.findById(user_id);
+      
+      // STATELESS TOKEN
+      // Format: base64(json)
       const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
-      const payload = JSON.stringify({ uid: user_id, wal: wallet, exp: expires_at, jti: Date.now() }); // added jti for uniqueness
+      
+      // Payload can contain partial user info for recovery if needed, but primarily ID
+      const payload = JSON.stringify({ 
+          uid: user_id, 
+          email: user?.email,
+          phone: user?.phone,
+          wal: user?.wallet_address, 
+          exp: expires_at, 
+          jti: Date.now() 
+      });
       const token = Buffer.from(payload).toString('base64');
 
       // We still push to memory for local dev consistency, but verification won't strictly require it
@@ -90,22 +200,25 @@ export const db = {
           return null; // Expired
         }
 
-        // 3. User Resolution (Stateless Resilience)
-        // If server restarted, 'users' array is empty. We must handle this.
+        // 3. User Resolution (Hybrid)
+        // Try getting fresh user from DB/Memory
         let user = await db.users.findById(payload.uid);
 
         if (!user) {
           // COLD START RECOVERY:
-          // If we have a valid token but no user in memory, it means the server restarted.
-          // Since we encoded the wallet address in the token (if using the new create()), we can recover it.
-
+          // Recover basic info from token
           user = {
             id: payload.uid,
-            wallet_address: payload.wal || ("0xRecovered_" + payload.uid.substr(-4)),
+            wallet_address: payload.wal,
+            email: payload.email,
+            phone: payload.phone,
             joined_at: new Date().toISOString(),
+            balance: 0, // Default for recovered session
             go_points: 100,
             go_tier: 'Bronze'
           };
+          // We DON'T push to memory/DB here to avoid auto-creating ghost users, 
+          // but we accept it for this session context.
         }
 
         return user;
@@ -120,3 +233,17 @@ export const db = {
     }
   }
 };
+
+// Map MongoDB Doc to User Interface
+function mapDocToUser(doc: any): User {
+    return {
+        id: doc._id.toString(),
+        wallet_address: doc.wallet_address,
+        email: doc.email,
+        phone: doc.phone,
+        joined_at: doc.joined_at,
+        balance: doc.balance || 0,
+        go_points: doc.go_points || 0,
+        go_tier: doc.go_tier || 'Bronze'
+    };
+}

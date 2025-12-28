@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         let isNewUser = false;
 
         if (!user) {
-            user = await db.users.create(cleanAddress);
+            user = await db.users.create({ wallet_address: cleanAddress });
             isNewUser = true;
         }
 
