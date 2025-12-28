@@ -4,12 +4,21 @@ import { db } from '../mock-db';
 
 export async function GET(request: Request) {
     try {
+        let token = '';
+        
         const authHeader = request.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        } else {
+             // Fallback to Query Param (for Custom GPTs)
+             const { searchParams } = new URL(request.url);
+             token = searchParams.get('session_token') || '';
         }
 
-        const token = authHeader.split(' ')[1];
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized: Missing Token' }, { status: 401 });
+        }
+
         const user = await db.sessions.verify(token);
 
         if (!user) {

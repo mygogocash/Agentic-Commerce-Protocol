@@ -1,17 +1,59 @@
 openapi: 3.1.0
 info:
   title: GoGoCash Agent API
-  description: API for searching products and tracking cashback.
-  version: 1.1.5
+  description: API for searching products, earning cashback, and managing user profiles.
+  version: 2.1.0
 servers:
   - url: https://gogocash-acp.vercel.app
     description: Production Server
 
 paths:
+  /api/auth/login:
+    post:
+      operationId: loginUser
+      summary: Login or Register with Email/Phone
+      description: Authenticates a user via Email or Phone. Creates a new account if one doesn't exist. Returns a session token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: User's email address (e.g. user@example.com)
+                phone:
+                  type: string
+                  description: User's phone number (e.g. +66812345678)
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_token:
+                    type: string
+                    description: Bearer token for future requests
+                  message:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      balance:
+                        type: number
+
   /api/linkWallet:
     post:
-      operationId: linkWithMyWallet
-      summary: Link with my wallet
+      operationId: linkWithWallet
+      summary: Link Ethereum Wallet (Legacy)
+      description: Alternative login method using a Web3 wallet address.
       requestBody:
         required: true
         content:
@@ -22,7 +64,6 @@ paths:
                 wallet_address:
                   type: string
                   description: Ethereum-compatible wallet address (0x...)
-                  example: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
       responses:
         "200":
           description: Successful link
@@ -33,41 +74,76 @@ paths:
                 properties:
                   session_token:
                     type: string
-                  message:
-                    type: string
-                  user:
-                    type: object
 
-  /api/unlink:
-    post:
-      operationId: unlinkAccount
-      summary: Unlink current wallet session
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                session_token:
-                  type: string
+  /api/user/profile:
+    get:
+      operationId: getUserProfile
+      summary: Get User Profile & Balance
+      description: Requires session_token from login.
+      parameters:
+        - name: session_token
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Token received from /api/auth/login
       responses:
         "200":
-          description: Successful unlink
+          description: User profile data
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                  status:
-                    type: string
+                  user:
+                    type: object
+                    properties:
+                      balance:
+                        type: number
+                        description: Current cashback balance
+                      go_points:
+                        type: number
+                      go_tier:
+                        type: string
+
+  /api/user/cashback:
+    get:
+      operationId: getCashbackHistory
+      summary: Get Cashback Transaction History
+      description: Requires session_token from login.
+      parameters:
+        - name: session_token
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Token received from /api/auth/login
+      responses:
+        "200":
+          description: History of cashback earnings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cashbacks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        amount:
+                          type: number
+                        status:
+                          type: string
+                        merchant_name:
+                          type: string
+                        created_at:
+                          type: string
 
   /api/searchProducts:
     get:
-      operationId: helpMeFindThisProduct
-      summary: Help me find this product!
+      operationId: searchProducts
+      summary: Search for products and deals
       parameters:
         - name: query
           in: query
@@ -76,10 +152,10 @@ paths:
             type: string
         - name: session_token
           in: query
-          required: true
+          required: false
           schema:
             type: string
-            description: Token received from /linkWallet
+            description: Optional token for personalized results
       responses:
         "200":
           description: List of products
@@ -95,84 +171,35 @@ paths:
                       properties:
                         product_name:
                           type: string
-                          description: Name of the product or offer
                         product_price:
                           type: number
-                          description: Price of the product in local currency (e.g. THB)
                         product_price_usd:
                           type: number
-                          description: Approximate price in USD
-                        currency:
-                          type: string
-                          description: Currency code (e.g. USD, MYR)
                         merchant_name:
                           type: string
-                          description: Name of the merchant (e.g. Shopee, Amazon)
-                        cashback_rate:
-                          type: number
-                          description: Cashback rate as a decimal (e.g. 0.05 for 5%)
-                        rating:
-                          type: number
-                          description: Product rating (0-5)
                         image_url:
                           type: string
-                          description: URL of the product image. MUST be displayed to the user.
                         affiliate_link:
                           type: string
-                          description: The GoGoCash branded tracking link the user MUST click to earn cashback
-                        in_stock:
-                          type: boolean
-
-  /api/getCashback:
-    get:
-      operationId: checkCashbackProgress
-      summary: What's the progress for my cashback?
-      parameters:
-        - name: session_token
-          in: query
-          required: true
-          schema:
-            type: string
-            description: Token received from /linkWallet
-      responses:
-        "200":
-          description: Cashback data
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  summary:
-                    type: object
-                  transactions:
-                    type: array
+                        estimated_cashback:
+                          type: number
 
   /api/getGifts:
     get:
-      operationId: getChristmasGiftIdeas
-      summary: Show me Christmas gift ideas
+      operationId: getGiftIdeas
+      summary: Get Christmas gift recommendations
       parameters:
         - name: recipient
           in: query
-          required: false
           schema:
             type: string
-            description: Who the gift is for (e.g. friend, mom, dad)
         - name: budget
           in: query
-          required: false
           schema:
             type: string
-            description: Approximate budget (e.g. 50 USD)
-        - name: session_token
-          in: query
-          required: true
-          schema:
-            type: string
-            description: Token received from /linkWallet
       responses:
         "200":
-          description: List of gift ideas
+          description: Gift suggestions
           content:
             application/json:
               schema:
@@ -185,30 +212,7 @@ paths:
                       properties:
                         product_name:
                           type: string
-                          description: Name of the product or offer
-                        product_price:
-                          type: number
-                          description: Price of the product in local currency (e.g. THB)
-                        product_price_usd:
-                          type: number
-                          description: Approximate price in USD
-                        currency:
-                          type: string
-                          description: Currency code (e.g. USD, MYR)
-                        merchant_name:
-                          type: string
-                          description: Name of the merchant (e.g. Shopee, Amazon)
-                        cashback_rate:
-                          type: number
-                          description: Cashback rate as a decimal (e.g. 0.05 for 5%)
-                        rating:
-                          type: number
-                          description: Product rating (0-5)
                         image_url:
                           type: string
-                          description: URL of the product image. MUST be displayed to the user.
                         affiliate_link:
                           type: string
-                          description: The GoGoCash branded tracking link the user MUST click to earn cashback
-                        in_stock:
-                          type: boolean
