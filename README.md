@@ -1,280 +1,161 @@
 # 🛒 Agentic Commerce Protocol (ACP)
 
-> **AI-powered shopping assistant that helps users find products across multiple merchants and earn cashback rewards.**
+> **AI-powered shopping assistant backend that empowers agents to search products, compare prices, and manage cashback rewards via Email, Phone, or Web3 Wallet.**
 
 [![Live Demo](https://img.shields.io/badge/Live-gogocash--acp.vercel.app-brightgreen)](https://gogocash-acp.vercel.app)
+[![CI Pipeline](https://github.com/mygogocash/Agentic-Commerce-Protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/mygogocash/Agentic-Commerce-Protocol/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://www.mongodb.com/atlas)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Hybrid-green)](https://www.mongodb.com)
 
 ---
 
 ## 🎯 What is ACP?
 
-The **Agentic Commerce Protocol** is an open API specification that enables AI agents (like ChatGPT, Claude, or custom agents) to:
+The **Agentic Commerce Protocol (ACP)** is a robust API layer designed for AI agents (Custom GPTs, Claude Projects, LangChain). It allows AI models to perform real-world commerce actions:
 
-- 🔍 **Search products** across multiple e-commerce platforms (Shopee, Lazada)
-- 💰 **Earn cashback** through affiliate tracking
-- 🎁 **Get gift recommendations** based on recipient and budget
-- 👛 **Link wallets** for session tracking and rewards
-
-Think of it as an **AI Shopping Assistant API** - your AI agent connects to ACP, and users can shop through natural conversation.
+- 🔍 **Search Products**: query 300,000+ products from Shopee & Lazada with natural language.
+- 🔐 **Hybrid Authentication**: Login users via **Email**, **Phone**, or **Ethereum Wallet**.
+- 💰 **Cashback Tracking**: Calculate and track affiliate commissions and reward users.
+- 👤 **User Profiles**: Manage user tiers (Bronze/Silver/Gold) and balances.
+- 🎁 **Gift Intelligence**: Generate curated gift ideas based on budget and recipient persona.
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 - Node.js 18+
-- MongoDB Atlas account (free tier works)
-- (Optional) Affiliate API keys for Lazada/InvolveAsia
+- MongoDB Atlas (Optional - system falls back to In-Memory DB if valid connection string missing)
 
 ### Installation
 
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/mygogocash/Agentic-Commerce-Protocol.git
 cd Agentic-Commerce-Protocol
 
-# Install dependencies
+# Install
 npm install
 
-# Set up environment variables
+# Setup Env
 cp .env.example .env.local
-# Edit .env.local with your MongoDB connection string
+# (Edit .env.local with MONGODB_URI if you have one)
 
-# Run the development server
+# Run
 npm run dev
 ```
 
-### Environment Variables
+### ☁️ Deployment (CI/CD)
 
-```env
-# MongoDB Atlas (Required)
-MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/
-MONGODB_DB=gogocash
+We use a GitOps workflow:
+1. **GitHub Actions (CI)**: Automatically lints, builds, and tests logic on every push.
+2. **Vercel (CD)**: Automatically deploys main branch to Production.
 
-# Atlas Search (Optional - for fuzzy matching)
-ATLAS_SEARCH_ENABLED=false
-
-# Affiliate APIs (Optional)
-INVOLVE_API_KEY=your_key
-INVOLVE_API_SECRET=your_secret
+To deploy manually:
+```bash
+npx vercel --prod
 ```
 
 ---
 
 ## 📚 API Reference
 
-Base URL: `https://gogocash-acp.vercel.app`
+**Base URL**: `https://gogocash-acp.vercel.app`
 
-### 1. Link Wallet
+### 1. Authentication (New!)
+Support for stateless session tokens via multiple methods.
 
-Start a session by linking a wallet address.
+**Login with Email/Phone:**
+```http
+POST /api/auth/login
+{ "email": "user@example.com" }
+// OR
+{ "phone": "+66812345678" }
+```
+*Returns: `session_token` (Bearer)*
 
+**Link Wallet (Web3):**
 ```http
 POST /api/linkWallet
-Content-Type: application/json
-
-{
-  "wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
-}
+{ "wallet_address": "0x..." }
 ```
 
-**Response:**
-```json
-{
-  "session_token": "abc123...",
-  "message": "Wallet linked successfully",
-  "user": { "address": "0x742d..." }
-}
-```
+### 2. User & Cashback
+Requires header: `Authorization: Bearer <session_token>`
 
-### 2. Search Products
-
-Search across all integrated merchants.
-
+**Get Profile:**
 ```http
-GET /api/searchProducts?query=wireless+headphones&session_token=abc123
+GET /api/user/profile
 ```
+*Returns matching balance, points, and tier.*
 
-**Response:**
-```json
-{
-  "results": [
-    {
-      "product_name": "Sony WH-1000XM5 Wireless Headphones",
-      "product_price": 9990,
-      "product_price_usd": 294,
-      "currency": "THB",
-      "merchant_name": "Shopee",
-      "rating": 4.8,
-      "cashback_rate": 0.05,
-      "image_url": "https://...",
-      "affiliate_link": "https://gogocash-acp.vercel.app/api/redirect?url=...",
-      "in_stock": true
-    }
-  ]
-}
-```
-
-### 3. Get Gift Ideas
-
-Get personalized gift recommendations.
-
+**Get Cashback History:**
 ```http
-GET /api/getGifts?recipient=mom&budget=50&session_token=abc123
+GET /api/user/cashback
 ```
 
-### 4. Check Cashback Progress
-
-View pending and earned cashback.
-
+### 3. Product Search
+Public access (or authenticated for personalized ranking).
 ```http
-GET /api/getCashback?session_token=abc123
-```
-
-### 5. Unlink Wallet
-
-End the session.
-
-```http
-POST /api/unlink
-Content-Type: application/json
-
-{
-  "session_token": "abc123"
-}
+GET /api/searchProducts?query=gaming+mouse+under+1000
 ```
 
 ---
 
-## 🔌 Integrating with AI Agents
+## 🤖 AI Agent Configuration
 
-### OpenAPI Specification
+Want to build a **Custom GPT** or **Claude Agent**?
 
-The full OpenAPI spec is available at:
-```
-https://gogocash-acp.vercel.app/openapi.yaml
-```
+### Step 1: OpenAPI Schema
+Use our [OpenAPI 3.1 Specification](public/openapi.yaml) to define the agent's actions.
+**URL**: `https://gogocash-acp.vercel.app/openapi.yaml`
 
-### ChatGPT Custom GPT
-
-1. Create a new GPT at [chat.openai.com](https://chat.openai.com)
-2. Go to **Configure** > **Actions**
-3. Import schema from URL: `https://gogocash-acp.vercel.app/openapi.yaml`
-4. Add the system prompt from `agent_instructions.md`
-
-### Claude / Other Agents
-
-Use the OpenAPI spec or implement direct HTTP calls to the endpoints above.
+### Step 2: System Instructions
+Copy the [Agent Instructions](agent_instructions.md) into your bot's system prompt. This teaches the AI how to:
+- Ask for login before checking balance.
+- Display product images using Markdown.
+- Format affiliate links correctly.
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   AI Agent      │────▶│   ACP API       │────▶│   Merchants     │
-│ (ChatGPT/Claude)│     │ (Next.js/Vercel)│     │ (Shopee/Lazada) │
-└─────────────────┘     └────────┬────────┘     └─────────────────┘
-                                 │
-                                 ▼
-                        ┌─────────────────┐
-                        │  MongoDB Atlas  │
-                        │ (379K products) │
-                        └─────────────────┘
-```
+**Hybrid Database Layer (`mock-db.ts`)**:
+- **Primary**: Connects to MongoDB Atlas for persistent storage.
+- **Fallback**: Automatically switches to In-Memory arrays if MongoDB is unreachable or unconfigured. This ensures the app **always works** for testing and demos.
 
-### Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Framework | Next.js 16 (App Router) |
-| Database | MongoDB Atlas |
-| Search | Text Index + Atlas Search |
-| Deployment | Vercel |
-| Language | TypeScript |
+**Stack**:
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Auth**: Stateless JWT-like Sessions
+- **Search**: MongoDB Atlas Search (Fuzzy Matching) + Regex Fallback
 
 ---
 
-## 📁 Project Structure
+## 📂 Project Structure
 
 ```
-├── app/
-│   ├── api/
-│   │   ├── searchProducts/    # Product search endpoint
-│   │   ├── getGifts/          # Gift recommendations
-│   │   ├── getCashback/       # Cashback tracking
-│   │   ├── linkWallet/        # Session management
-│   │   ├── unlink/            # End session
-│   │   └── redirect/          # Affiliate link handler
-│   └── page.tsx               # Landing page
+├── .github/workflows/    # CI Pipelines
+├── app/                  # Next.js App Router
 ├── src/ACP/
-│   ├── shopee.ts              # Shopee integration
-│   ├── lazada.ts              # Lazada integration
-│   ├── involve-asia.ts        # Involve Asia affiliate
-│   ├── lib/mongodb.ts         # Database connection
-│   ├── scripts/               # Utility scripts
-│   └── data/                  # Schema & config
+│   ├── api/              # Core API Logic (Refactored)
+│   ├── lib/              # DB Connections
+│   ├── mock-db.ts        # Hybrid DB Layer
+│   ├── shopee.ts         # Merchant Integration
+│   └── scripts/          # Verification Scripts
 ├── public/
-│   └── openapi.yaml           # API specification
-└── docs/
-    └── migration-*.md         # Documentation
+│   └── openapi.yaml      # Agent Spec
+└── agent_instructions.md # System Prompt
 ```
-
----
-
-## 🛠️ Scripts
-
-```bash
-# Development
-npm run dev                    # Start dev server
-npm run build                  # Build for production
-npm run lint                   # Run ESLint
-
-# Database
-npx ts-node src/ACP/data/mongodb-setup.ts      # Create indexes
-npx ts-node src/ACP/scripts/push-to-cloud.ts   # Import products
-npx ts-node src/ACP/scripts/check-db-stats.ts  # View stats
-```
-
----
-
-## 🌐 Supported Merchants
-
-| Merchant | Region | Status |
-|----------|--------|--------|
-| Shopee | Thailand 🇹🇭 | ✅ Active (379K products) |
-| Lazada | Thailand 🇹🇭 | ✅ Active (API) |
-| Involve Asia | SEA | ✅ Active (Affiliate) |
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🔗 Links
-
-- **Live API**: [gogocash-acp.vercel.app](https://gogocash-acp.vercel.app)
-- **OpenAPI Spec**: [openapi.yaml](https://gogocash-acp.vercel.app/openapi.yaml)
-- **GitHub**: [mygogocash/Agentic-Commerce-Protocol](https://github.com/mygogocash/Agentic-Commerce-Protocol)
+1. Fork & Branch (`feature/cool-new-thing`)
+2. Commit & Push
+3. Open PR (CI will run automatically)
 
 ---
 
