@@ -1,169 +1,42 @@
 openapi: 3.1.0
 info:
-  title: GoGoCash Agent API
-  description: API for searching products, earning cashback, and managing user profiles.
-  version: 2.1.0
+  title: Agentic Commerce Protocol (ACP)
+  description: API for searching products and checking user cashback rewards.
+  version: 1.0.0
 servers:
-  - url: https://gogocash-acp.vercel.app
-    description: Production Server
-
+  - url: https://gogocash-acp.web.app
+    description: Production Server (Firebase)
 paths:
-  /api/login:
-    post:
-      operationId: loginUser
-      summary: Login or Register with Email/Phone
-      description: Authenticates a user via Email or Phone. Creates a new account if one doesn't exist. Returns a session token.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  description: User's email address (e.g. user@example.com)
-                phone:
-                  type: string
-                  description: User's phone number (e.g. +66812345678)
-      responses:
-        "200":
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  session_token:
-                    type: string
-                    description: Bearer token for future requests
-                  message:
-                    type: string
-                  user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      email:
-                        type: string
-                      balance:
-                        type: number
-
-  /api/linkWallet:
-    post:
-      operationId: linkWithWallet
-      summary: Link Ethereum Wallet (Legacy)
-      description: Alternative login method using a Web3 wallet address.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                wallet_address:
-                  type: string
-                  description: Ethereum-compatible wallet address (0x...)
-      responses:
-        "200":
-          description: Successful link
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  session_token:
-                    type: string
-
-  /api/user/profile:
-    get:
-      operationId: getUserProfile
-      summary: Get User Profile & Balance
-      description: Requires session_token from login.
-      parameters:
-        - name: session_token
-          in: query
-          required: true
-          schema:
-            type: string
-            description: Token received from /api/auth/login
-      responses:
-        "200":
-          description: User profile data
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    type: object
-                    properties:
-                      balance:
-                        type: number
-                        description: Current cashback balance
-                      go_points:
-                        type: number
-                      go_tier:
-                        type: string
-
-  /api/user/cashback:
-    get:
-      operationId: getCashbackHistory
-      summary: Get Cashback Transaction History
-      description: Requires session_token from login.
-      parameters:
-        - name: session_token
-          in: query
-          required: true
-          schema:
-            type: string
-            description: Token received from /api/auth/login
-      responses:
-        "200":
-          description: History of cashback earnings
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  cashbacks:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        amount:
-                          type: number
-                        status:
-                          type: string
-                        merchant_name:
-                          type: string
-                        created_at:
-                          type: string
-
   /api/searchProducts:
     get:
       operationId: searchProducts
-      summary: Search for products and deals
+      summary: Search for products
+      description: Search the product catalog using keywords (e.g., "iphone", "dress").
       parameters:
         - name: query
           in: query
+          description: Search keywords
           required: true
           schema:
             type: string
-        - name: session_token
+        - name: limit
           in: query
+          description: Number of results to return (default 5)
           required: false
           schema:
-            type: string
-            description: Optional token for personalized results
+            type: integer
       responses:
-        "200":
-          description: List of products
+        '200':
+          description: Successful search results
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  query:
+                    type: string
+                  total_results:
+                    type: integer
                   results:
                     type: array
                     items:
@@ -173,46 +46,39 @@ paths:
                           type: string
                         product_price:
                           type: number
-                        product_price_usd:
-                          type: number
-                        merchant_name:
+                        product_url:
                           type: string
                         image_url:
                           type: string
-                        affiliate_link:
+                        merchant_name:
                           type: string
                         estimated_cashback:
                           type: number
-
-  /api/getGifts:
+  /api/check-mongo-user:
     get:
-      operationId: getGiftIdeas
-      summary: Get Christmas gift recommendations
+      operationId: checkUser
+      summary: Check User Profile
+      description: Retrieve legacy user data and cashback history by email or phone.
       parameters:
-        - name: recipient
+        - name: email
           in: query
+          required: false
           schema:
             type: string
-        - name: budget
+        - name: phone
           in: query
+          required: false
           schema:
             type: string
       responses:
-        "200":
-          description: Gift suggestions
+        '200':
+          description: User profile found
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        product_name:
-                          type: string
-                        image_url:
-                          type: string
-                        affiliate_link:
-                          type: string
+                  found:
+                    type: boolean
+                  user:
+                    type: object
