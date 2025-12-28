@@ -5,7 +5,7 @@ async function demo() {
     console.log('--- Demo: Find me headphones ---');
 
     console.log('1. User says: "Link my wallet 0xDemoUser"');
-    const user = await db.users.create('0xDemoUser');
+    const user = await db.users.create({ wallet_address: '0xDemoUser' });
     const session = await db.sessions.create(user.id);
     console.log(`   Agent: "Linked! Session Token: ${session.token.substring(0, 10)}..."`);
 

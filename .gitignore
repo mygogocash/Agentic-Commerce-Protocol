@@ -39,3 +39,9 @@ data-feed/*.csv
 data-feed/*.pdf
 # Keep the subset json
 !src/ACP/data/shopee-subset.json
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug*.log
+data-feed/shopee_datafeed.csv

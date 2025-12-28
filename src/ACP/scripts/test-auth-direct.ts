@@ -1,5 +1,5 @@
 
-import { POST } from '../../../app/api/auth/login/route';
+import { POST } from '../../app/api/auth/login/route';
 import { db } from '../mock-db';
 import { NextResponse } from 'next/server';
 

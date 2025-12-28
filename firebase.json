@@ -9,19 +9,6 @@
     "frameworksBackend": {
       "region": "asia-southeast1"
     }
-  },
-  "functions": {
-    "source": ".",
-    "codebase": "default",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase.json",
-      ".env",
-      ".env.local"
-    ],
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" run build"
-    ]
   }
+
 }

@@ -1,5 +1,6 @@
 import { getCollection } from './lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { firestoreService } from './services/firestore';
 
 export interface User {
   id: string;
@@ -49,109 +50,42 @@ const revokedTokens = globalForDb.revokedTokens;
 export const db = {
   users: {
     findByWallet: async (wallet_address: string): Promise<User | null> => {
-      const col = await getCollection('users');
-      if (col) {
-          const doc = await col.findOne({ wallet_address: { $regex: new RegExp(`^${wallet_address}$`, 'i') } });
-          return doc ? mapDocToUser(doc) : null;
-      }
-      return users.find((u) => u.wallet_address?.toLowerCase() === wallet_address.toLowerCase()) || null;
+        // Not implemented in Firestore yet, fallback or add if needed
+        return null;
     },
     findByEmail: async (email: string): Promise<User | null> => {
-        const col = await getCollection('users');
-        if (col) {
-            const doc = await col.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
-            return doc ? mapDocToUser(doc) : null;
-        }
-        return users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) || null;
+        return await firestoreService.users.findByEmail(email);
     },
     findByPhone: async (phone: string): Promise<User | null> => {
-        const col = await getCollection('users');
-        if (col) {
-            const doc = await col.findOne({ phone: phone });
-            return doc ? mapDocToUser(doc) : null;
-        }
-        return users.find((u) => u.phone === phone) || null;
+        return await firestoreService.users.findByPhone(phone);
     },
     create: async (data: { wallet_address?: string, email?: string, phone?: string }): Promise<User> => {
-      const newUserBase = {
-        joined_at: new Date().toISOString(),
-        balance: 0, 
-        go_points: 100, 
-        go_tier: 'Bronze',
-        ...data
-      };
-
-      const col = await getCollection('users');
-      if (col) {
-          const result = await col.insertOne(newUserBase);
-          return { id: result.insertedId.toString(), ...newUserBase } as unknown as User;
-      }
-
-      // Fallback
-      const newUser: User = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        ...newUserBase
-      } as User;
-      users.push(newUser);
-      return newUser;
+       return await firestoreService.users.create(data);
     },
     findById: async (id: string): Promise<User | null> => {
-      const col = await getCollection('users');
-      if (col) {
-          try {
-            const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { id: id };
-            const doc = await col.findOne(query);
-            return doc ? mapDocToUser(doc) : null;
-          } catch (e) { return null; }
-      }
-      return users.find((u) => u.id === id) || null;
+       return await firestoreService.users.findById(id);
     },
   },
   cashbacks: {
       create: async (userId: string, amount: number): Promise<UserMyCashback> => {
-          const newCashbackBase = {
-              userId,
-              cashback_amount: amount,
-              status: 'pending',
-              created_at: new Date().toISOString()
-          };
-
-          const col = await getCollection('usermycashbacks');
-          if (col) {
-              const result = await col.insertOne(newCashbackBase);
-              
-              // Update User Balance in DB
-              const usersCol = await getCollection('users');
-              if (usersCol) {
-                  const query = ObjectId.isValid(userId) ? { _id: new ObjectId(userId) } : { id: userId };
-                  await usersCol.updateOne(query, { $inc: { balance: amount } });
-              }
-
-              return { id: result.insertedId.toString(), ...newCashbackBase } as unknown as UserMyCashback;
-          }
-
-          // Fallback
-          const newCashback: UserMyCashback = {
-              id: `cb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-              ...newCashbackBase
-          } as UserMyCashback;
-          cashbacks.push(newCashback);
-          
-          // Update user balance (memory)
-          const user = users.find(u => u.id === userId);
-          if (user) {
-              user.balance += amount;
-          }
-          
-          return newCashback;
+         const txn = await firestoreService.cashbacks.create(userId, amount);
+         return {
+             id: txn.id,
+             userId: txn.userId,
+             cashback_amount: txn.amount,
+             status: txn.status,
+             created_at: txn.createdAt
+         } as UserMyCashback;
       },
       findByUser: async (userId: string): Promise<UserMyCashback[]> => {
-          const col = await getCollection('usermycashbacks');
-          if (col) {
-              const docs = await col.find({ userId }).toArray();
-              return docs.map(d => ({ ...d, id: d._id.toString() })) as unknown as UserMyCashback[];
-          }
-          return cashbacks.filter(c => c.userId === userId);
+          const txns = await firestoreService.cashbacks.findByUser(userId);
+          return txns.map((t: any) => ({
+              id: t.id,
+              userId: t.userId,
+              cashback_amount: t.amount,
+              status: t.status,
+              created_at: t.createdAt
+          })) as UserMyCashback[];
       }
   },
   sessions: {
