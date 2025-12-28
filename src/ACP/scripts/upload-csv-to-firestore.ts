@@ -22,7 +22,8 @@ async function getAccessToken() {
         params.append('client_id', process.env.FIREBASE_CLIENT_ID || '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com');
         
         try {
-            const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAh8WyPFz1nXFudNto0es4ZsnEjawtdKPg";
+            const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+            if (!apiKey) throw new Error("Missing NEXT_PUBLIC_FIREBASE_API_KEY");
             const response = await fetch('https://securetoken.googleapis.com/v1/token?key=' + apiKey, {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

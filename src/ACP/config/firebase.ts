@@ -5,7 +5,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAh8WyPFz1nXFudNto0es4ZsnEjawtdKPg",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "gogocash-acp.firebaseapp.com",
   projectId: "gogocash-acp",
   storageBucket: "gogocash-acp.firebasestorage.app",
