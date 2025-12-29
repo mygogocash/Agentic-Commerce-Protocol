@@ -45,3 +45,8 @@ data-feed/*.pdf
 firebase-debug.log
 firebase-debug*.log
 data-feed/shopee_datafeed.csv
+
+# Scripts Runtime
+src/ACP/scripts/upload_checkpoint.json
+src/ACP/scripts/daily_tracker.json
+upload.log

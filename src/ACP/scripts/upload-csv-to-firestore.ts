@@ -1,5 +1,8 @@
-import * as fs from 'fs';
+import * as dotenv from 'dotenv';
 import * as path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
+import * as fs from 'fs';
 import { parse } from 'csv-parse';
 
 // --- CONFIGURATION ---
@@ -11,9 +14,6 @@ let ACCESS_TOKEN = process.env.TEMP_ACCESS_TOKEN || "PLACEHOLDER_TOKEN";
 const MAX_RECORDS = 20000000; // Total dataset limit
 const DAILY_LIMIT = 20000;    // Spark Plan limit (Free Tier)
 const BATCH_SIZE = 20;        // REST API batch limit
-
-import * as dotenv from 'dotenv';
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 async function getAccessToken() {
     if (process.env.FIREBASE_REFRESH_TOKEN) {
@@ -56,6 +56,7 @@ async function uploadCsvToFirestore() {
 
     console.log(`Starting upload to Firestore (REST API)...`);
     ACCESS_TOKEN = await getAccessToken(); // Fetch fresh token
+    console.log(`Token Length: ${ACCESS_TOKEN.length}, Preview: ${ACCESS_TOKEN.substring(0, 5)}...${ACCESS_TOKEN.slice(-5)}`);
     console.log(`Project: ${PROJECT_ID}, Collection: ${COLLECTION_NAME}`);
     console.log(`Target: ${MAX_RECORDS} records\n`);
 
