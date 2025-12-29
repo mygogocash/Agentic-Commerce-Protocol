@@ -2,17 +2,29 @@
 import { NextResponse } from 'next/server';
 import { db } from '../lib/db-service';
 
+// Add CORS headers for ChatGPT integration
+function addCorsHeaders(response: NextResponse) {
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return response;
+}
+
+export async function OPTIONS(request: Request) {
+    return addCorsHeaders(new NextResponse(null, { status: 200 }));
+}
+
 export async function GET(request: Request) {
     try {
         let token = '';
-        
+
         const authHeader = request.headers.get('Authorization');
         if (authHeader && authHeader.startsWith('Bearer ')) {
             token = authHeader.split(' ')[1];
         } else {
-             // Fallback to Query Param (for Custom GPTs)
-             const { searchParams } = new URL(request.url);
-             token = searchParams.get('session_token') || '';
+            // Fallback to Query Param (for Custom GPTs)
+            const { searchParams } = new URL(request.url);
+            token = searchParams.get('session_token') || '';
         }
 
         // if (!token) ... we allow email fallback now, check happens later
@@ -30,10 +42,11 @@ export async function GET(request: Request) {
         }
 
         if (!user) {
-            return NextResponse.json({ error: 'Invalid Session or Email not found' }, { status: 401 });
+            const response = NextResponse.json({ error: 'Invalid Session or Email not found' }, { status: 401 });
+            return addCorsHeaders(response);
         }
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             user: {
                 id: user.id,
                 email: user.email,
@@ -50,11 +63,14 @@ export async function GET(request: Request) {
             }
         });
 
+        return addCorsHeaders(response);
+
     } catch (error) {
         console.error('Error in user/profile:', error);
-        return NextResponse.json(
+        const response = NextResponse.json(
             { error: 'Internal Server Error' },
             { status: 500 }
         );
+        return addCorsHeaders(response);
     }
 }
