@@ -1,17 +1,17 @@
-import * as functions from 'firebase-functions';
+import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 
 admin.initializeApp();
 
 // CORS headers helper
-const setCorsHeaders = (res: functions.Response) => {
+const setCorsHeaders = (res: any) => {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 };
 
 // Test API endpoint
-export const test = functions.https.onRequest((req, res) => {
+export const test = onRequest((req, res) => {
     setCorsHeaders(res);
 
     if (req.method === 'OPTIONS') {
@@ -20,7 +20,7 @@ export const test = functions.https.onRequest((req, res) => {
     }
 
     res.json({
-        message: 'Firebase Functions API is working!',
+        message: 'Firebase Functions v2 API is working!',
         timestamp: new Date().toISOString(),
         method: req.method,
         path: req.path
@@ -28,7 +28,7 @@ export const test = functions.https.onRequest((req, res) => {
 });
 
 // Search Products API endpoint
-export const searchProducts = functions.https.onRequest((req, res) => {
+export const searchProducts = onRequest((req, res) => {
     setCorsHeaders(res);
 
     if (req.method === 'OPTIONS') {
@@ -81,13 +81,13 @@ export const searchProducts = functions.https.onRequest((req, res) => {
         user_email: userEmail,
         total_results: mockProducts.length,
         results: mockProducts.slice(0, limit),
-        message: 'Firebase Functions API working with mock data',
+        message: 'Firebase Functions v2 API working with mock data',
         timestamp: new Date().toISOString()
     });
 });
 
 // User Profile API endpoint
-export const getUserProfile = functions.https.onRequest((req, res) => {
+export const getUserProfile = onRequest((req, res) => {
     setCorsHeaders(res);
 
     if (req.method === 'OPTIONS') {
@@ -116,7 +116,7 @@ export const getUserProfile = functions.https.onRequest((req, res) => {
 });
 
 // User Cashback API endpoint
-export const getUserCashback = functions.https.onRequest((req, res) => {
+export const getUserCashback = onRequest((req, res) => {
     setCorsHeaders(res);
 
     if (req.method === 'OPTIONS') {
