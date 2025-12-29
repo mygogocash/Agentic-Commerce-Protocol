@@ -19,9 +19,9 @@ paths:
           required: true
           schema:
             type: string
-        - name: session_token
+        - name: user_email
           in: query
-          description: User's session token for cashback tracking (Optional but recommended)
+          description: User's email address for linking/tracking (Required for cashback tracking)
           required: false
           schema:
             type: string
@@ -70,8 +70,14 @@ paths:
       parameters:
         - name: session_token
           in: query
-          description: Auth token
-          required: true
+          description: Auth token (Optional if email provided)
+          required: false
+          schema:
+            type: string
+        - name: user_email
+          in: query
+          description: User email (Optional alternative to token)
+          required: false
           schema:
             type: string
       responses:
@@ -104,8 +110,14 @@ paths:
       parameters:
         - name: session_token
           in: query
-          description: Auth token
-          required: true
+          description: Auth token (Optional if email provided)
+          required: false
+          schema:
+            type: string
+        - name: user_email
+          in: query
+          description: User email (Optional alternative to token)
+          required: false
           schema:
             type: string
       responses:
