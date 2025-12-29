@@ -15,16 +15,21 @@ export async function GET(request: Request) {
     }
 
     try {
+        const userEmail = searchParams.get('user_email');
+        
         // If we have a session token but no direct user ID, try to resolve the user
-        if (!userId && sessionToken) {
-            const sessionUser = await db.sessions.verify(sessionToken);
-            if (sessionUser) {
-                // STRICT CHECK: Verify user exists in MongoDB "users" collection
-                // This ensures we don't track users who aren't actually in our DB
-                const dbUser = await db.users.findById(sessionUser.id);
-                if (dbUser) {
-                    userId = dbUser.id;
+        if (!userId) {
+            if (sessionToken) {
+                const sessionUser = await db.sessions.verify(sessionToken);
+                if (sessionUser) {
+                    // STRICT CHECK: Verify user exists in MongoDB "users" collection
+                    const dbUser = await db.users.findById(sessionUser.id);
+                    if (dbUser) userId = dbUser.id;
                 }
+            } else if (userEmail) {
+                // Email-based lookup (ChatGPT Integration)
+                const dbUser = await db.users.findByEmail(userEmail);
+                if (dbUser) userId = dbUser.id;
             }
         }
 

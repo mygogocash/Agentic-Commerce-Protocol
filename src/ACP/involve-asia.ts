@@ -5,7 +5,7 @@ const API_KEY = process.env.INVOLVE_API_KEY || 'general';
 const API_SECRET = process.env.INVOLVE_API_SECRET;
 
 if (!API_SECRET) {
-    throw new Error("Missing INVOLVE_API_SECRET environment variable");
+    console.warn("Missing INVOLVE_API_SECRET environment variable - Involve Asia service will be disabled");
 }
 
 const BASE_URL = 'https://api.involve.asia/api';
@@ -15,6 +15,11 @@ let tokenExpiry = 0;
 let cachedOffers: any[] = [];
 
 async function authenticate() {
+    if (!API_SECRET) {
+        console.warn("Cannot authenticate with Involve Asia - missing API_SECRET");
+        return null;
+    }
+
     if (cachedToken && Date.now() < tokenExpiry) {
         return cachedToken;
     }

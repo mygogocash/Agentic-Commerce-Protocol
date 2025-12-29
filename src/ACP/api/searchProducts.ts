@@ -57,9 +57,12 @@ export async function GET(request: Request) {
         const results = topResults.map((product: any) => {
             let trackingLink = product.affiliate_link || product.product_url;
             
-            // If we have a user token, route through our redirector to attach sub_id
-            if (trackingLink && token) {
-                trackingLink = `${baseUrl}/api/redirect?url=${encodeURIComponent(trackingLink)}&session_token=${token}`;
+            // If we have a user token OR email, route through our redirector to attach sub_id
+            if (trackingLink && (token || searchParams.get('user_email'))) {
+                const emailParam = searchParams.get('user_email') ? `&user_email=${encodeURIComponent(searchParams.get('user_email')!)}` : '';
+                const tokenParam = token ? `&session_token=${token}` : '';
+                
+                trackingLink = `${baseUrl}/api/redirect?url=${encodeURIComponent(trackingLink)}${tokenParam}${emailParam}`;
             }
             
             return {

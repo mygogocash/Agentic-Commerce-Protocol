@@ -15,14 +15,19 @@ export async function GET(request: Request) {
              token = searchParams.get('session_token') || '';
         }
 
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized: Missing Token' }, { status: 401 });
+        // if (!token) ... allow fallback
+        
+        let user = null;
+        if (token) {
+            user = await db.sessions.verify(token);
+        } else {
+            const { searchParams } = new URL(request.url);
+            const email = searchParams.get('user_email');
+            if (email) user = await db.users.findByEmail(email);
         }
 
-        const user = await db.sessions.verify(token);
-
         if (!user) {
-            return NextResponse.json({ error: 'Invalid Session' }, { status: 401 });
+            return NextResponse.json({ error: 'Invalid Session or Email not found' }, { status: 401 });
         }
 
         const cashbacks = await db.cashbacks.findByUser(user.id);
