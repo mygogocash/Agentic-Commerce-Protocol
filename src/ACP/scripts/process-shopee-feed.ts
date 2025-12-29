@@ -25,6 +25,25 @@ interface ShopeeRow {
     shop_name: string;
 }
 
+// TODO: REPLACE THIS WITH YOUR ACTUAL SHOPEE AFFILIATE APP ID / UTM SOURCE
+const SHOPEE_APP_ID = "11442"; 
+const SHOPEE_OFFER_ID = "103089";
+
+const generateShopeeUniversalLink = (shopId: string, itemId: string, originalLink?: string): string => {
+    // Format: https://shopee.co.th/universal-link/product/{shopid}/{itemid}?utm_source={APP_ID}&utm_medium=affiliate&utm_campaign={OFFER_ID}
+    if (!shopId || !itemId) return originalLink || "";
+    
+    // Base Universal Link
+    const baseUrl = `https://shopee.co.th/universal-link/product/${shopId}/${itemId}`;
+    
+    const params = new URLSearchParams();
+    params.append("utm_source", SHOPEE_APP_ID);
+    params.append("utm_medium", "affiliate");
+    params.append("utm_campaign", SHOPEE_OFFER_ID);
+
+    return `${baseUrl}?${params.toString()}`;
+};
+
 const processFeed = async () => {
     console.log('Starting Shopee Feed Processing...');
     const products: any[] = [];
@@ -64,6 +83,14 @@ const processFeed = async () => {
         
         // 3. Map to our Domain Model
         // Needed: product_id, product_name, product_price, image_url, affiliate_link...
+        
+        // Generate robust affiliate link
+        const universalLink = generateShopeeUniversalLink(
+            row.shopid, 
+            row.itemid, 
+            row['product_short link'] || row['product_link']
+        );
+
         const product = {
             product_id: `shp_${row.itemid}`,
             product_name: row.title,
@@ -78,17 +105,10 @@ const processFeed = async () => {
             reviews_count: sold, // Using sold count as proxy for popularity/reviews
             cashback_rate: 0.05, // Flat 5% for now
             estimated_cashback: Number((price * 0.05).toFixed(2)),
-            affiliate_link: row.product_short_link || row.product_link, // Need to wrap later or use direct if it's already an affiliate link? 
-                                                // The CSV has 'product_short link' (space?) let's filter keys.
+            affiliate_link: universalLink,
             in_stock: true,
             _sold: sold // For sorting
         };
-
-        // Fix keys from CSV sometimes having weird names
-        if (!product.affiliate_link) {
-             // Try finding link
-             product.affiliate_link = row['product_short link'] || row['product_link'] || '';
-        }
 
         // 4. Selection Strategy: Reservoir Sampling or Just sort later?
         // Since we want "Top" items, we should collect more then sort.

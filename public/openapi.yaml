@@ -1,33 +1,39 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce Protocol (ACP)
-  description: API for searching products and checking user cashback rewards.
+  description: API for searching products with cashback and checking user rewards.
   version: 1.0.0
 servers:
   - url: https://gogocash-acp.web.app
-    description: Production Server (Firebase)
+    description: Production Server
 paths:
   /api/searchProducts:
     get:
       operationId: searchProducts
       summary: Search for products
-      description: Search the product catalog using keywords (e.g., "iphone", "dress").
+      description: Search the product catalog. Returns products with cashback affiliate links.
       parameters:
         - name: query
           in: query
-          description: Search keywords
+          description: Search keywords (e.g., "iphone 15", "running shoes")
           required: true
+          schema:
+            type: string
+        - name: session_token
+          in: query
+          description: User's session token for cashback tracking (Optional but recommended)
+          required: false
           schema:
             type: string
         - name: limit
           in: query
-          description: Number of results to return (default 5)
+          description: Number of results (default 5)
           required: false
           schema:
             type: integer
       responses:
-        '200':
-          description: Successful search results
+        "200":
+          description: Successful search
           content:
             application/json:
               schema:
@@ -46,39 +52,80 @@ paths:
                           type: string
                         product_price:
                           type: number
-                        product_url:
+                        affiliate_link:
                           type: string
+                          description: Clickable link for the user (Contains tracking)
                         image_url:
                           type: string
                         merchant_name:
                           type: string
                         estimated_cashback:
                           type: number
-  /api/check-mongo-user:
+
+  /api/user/profile:
     get:
-      operationId: checkUser
-      summary: Check User Profile
-      description: Retrieve legacy user data and cashback history by email or phone.
+      operationId: getUserProfile
+      summary: Get User Profile
+      description: Retrieve user balance, points, and tier.
       parameters:
-        - name: email
+        - name: session_token
           in: query
-          required: false
-          schema:
-            type: string
-        - name: phone
-          in: query
-          required: false
+          description: Auth token
+          required: true
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: User profile found
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  found:
-                    type: boolean
                   user:
                     type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      balance:
+                        type: number
+                      go_points:
+                        type: number
+                      go_tier:
+                        type: string
+
+  /api/user/cashback:
+    get:
+      operationId: getUserCashback
+      summary: Get Cashback History
+      description: Retrieve list of past cashback transactions.
+      parameters:
+        - name: session_token
+          in: query
+          description: Auth token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: History found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cashbacks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        amount:
+                          type: number
+                        description:
+                          type: string
+                        status:
+                          type: string
+                        createdAt:
+                          type: string

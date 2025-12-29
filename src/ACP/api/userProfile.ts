@@ -36,6 +36,10 @@ export async function GET(request: Request) {
                 go_tier: user.go_tier,
                 joined_at: user.joined_at
             }
+        }, {
+            headers: {
+                'Cache-Control': 'no-store, max-age=0, must-revalidate',
+            }
         });
 
     } catch (error) {

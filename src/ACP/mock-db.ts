@@ -1,4 +1,4 @@
-import { getCollection } from './lib/mongodb';
+import clientPromise from './config/mongodb';
 import { ObjectId } from 'mongodb';
 import { firestoreService } from './services/firestore';
 
@@ -50,42 +50,82 @@ const revokedTokens = globalForDb.revokedTokens;
 export const db = {
   users: {
     findByWallet: async (wallet_address: string): Promise<User | null> => {
-        // Not implemented in Firestore yet, fallback or add if needed
-        return null;
+        const client = await clientPromise;
+        const db = client.db("gogocash");
+        const doc = await db.collection("users").findOne({ wallet_address });
+        return doc ? mapDocToUser(doc) : null;
     },
     findByEmail: async (email: string): Promise<User | null> => {
-        return await firestoreService.users.findByEmail(email);
+        const client = await clientPromise;
+        const db = client.db("gogocash");
+        const doc = await db.collection("users").findOne({ email });
+        return doc ? mapDocToUser(doc) : null;
     },
     findByPhone: async (phone: string): Promise<User | null> => {
-        return await firestoreService.users.findByPhone(phone);
+        const client = await clientPromise;
+        const db = client.db("gogocash");
+        const doc = await db.collection("users").findOne({ phone });
+        return doc ? mapDocToUser(doc) : null;
     },
     create: async (data: { wallet_address?: string, email?: string, phone?: string }): Promise<User> => {
-       return await firestoreService.users.create(data);
+       // Hybrid: Check if exists in Mongo first
+       const client = await clientPromise;
+       const db = client.db("gogocash");
+       const collection = db.collection("users");
+       
+       const existing = await collection.findOne({ 
+           $or: [
+               { wallet_address: data.wallet_address }, 
+               { email: data.email }
+            ].filter(q => Object.values(q)[0]) 
+       });
+       
+       if (existing) return mapDocToUser(existing);
+
+       const newUser = {
+           ...data,
+           balance: 0,
+           go_points: 0,
+           go_tier: 'Bronze',
+           joined_at: new Date().toISOString()
+       };
+       
+       const result = await collection.insertOne(newUser);
+       return { id: result.insertedId.toString(), ...newUser } as User;
     },
     findById: async (id: string): Promise<User | null> => {
-       return await firestoreService.users.findById(id);
+       const client = await clientPromise;
+       const db = client.db("gogocash");
+       try {
+           const doc = await db.collection("users").findOne({ _id: new ObjectId(id) });
+           return doc ? mapDocToUser(doc) : null;
+       } catch (e) { return null; }
     },
   },
   cashbacks: {
       create: async (userId: string, amount: number): Promise<UserMyCashback> => {
-         const txn = await firestoreService.cashbacks.create(userId, amount);
-         return {
-             id: txn.id,
-             userId: txn.userId,
-             cashback_amount: txn.amount,
-             status: txn.status,
-             created_at: txn.createdAt
-         } as UserMyCashback;
+         const client = await clientPromise;
+         const db = client.db("gogocash");
+         const newCashback = {
+             userId,
+             cashback_amount: amount,
+             status: 'pending',
+             created_at: new Date().toISOString()
+         };
+         const result = await db.collection("usermycashback").insertOne(newCashback);
+         return { id: result.insertedId.toString(), ...newCashback } as UserMyCashback;
       },
       findByUser: async (userId: string): Promise<UserMyCashback[]> => {
-          const txns = await firestoreService.cashbacks.findByUser(userId);
-          return txns.map((t: any) => ({
-              id: t.id,
-              userId: t.userId,
-              cashback_amount: t.amount,
-              status: t.status,
-              created_at: t.createdAt
-          })) as UserMyCashback[];
+          const client = await clientPromise;
+          const db = client.db("gogocash");
+          const docs = await db.collection("usermycashback").find({ userId }).toArray();
+          return docs.map(doc => ({
+              id: doc._id.toString(),
+              userId: doc.userId,
+              cashback_amount: doc.cashback_amount,
+              status: doc.status as 'pending' | 'approved' | 'rejected',
+              created_at: doc.created_at
+          }));
       }
   },
   sessions: {

@@ -59,9 +59,25 @@ export async function GET(request: Request) {
 
         // 3. Filter/Deduplicate/Sort (Simplified)
         // In a real app, we would dedupe by name similarity here.
-        const results = rawResults.slice(0, 5); // Take top 5 as per PRD
+        const topResults = rawResults.slice(0, 5); // Take top 5 as per PRD
+        
+        // 4. Wrap Links for Tracking
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gogocash-acp.web.app';
+        const results = topResults.map((product: any) => {
+            let trackingLink = product.affiliate_link || product.product_url;
+            
+            // If we have a user token, route through our redirector to attach sub_id
+            if (trackingLink && token) {
+                trackingLink = `${baseUrl}/api/redirect?url=${encodeURIComponent(trackingLink)}&session_token=${token}`;
+            }
+            
+            return {
+                ...product,
+                affiliate_link: trackingLink
+            };
+        });
 
-        // 4. Return Results
+        // 5. Return Results
         return NextResponse.json({
             query,
             total_results: rawResults.length,

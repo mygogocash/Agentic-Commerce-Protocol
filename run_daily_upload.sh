@@ -9,6 +9,6 @@ cd /Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol
 
 # Run the upload script
 # It automatically checks 'daily_tracker.json' and stops after 20k
-npx ts-node src/ACP/scripts/upload-csv-to-firestore.ts >> upload.log 2>&1
+npx ts-node --compiler-options '{"types":["node"], "module": "commonjs"}' src/ACP/scripts/upload-csv-to-firestore.ts >> upload.log 2>&1
 
 echo "Daily upload job finished at $(date)" >> upload.log

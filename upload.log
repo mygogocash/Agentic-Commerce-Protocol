@@ -16003,3 +16003,415 @@ Already uploaded today: 0 records.
 
 Upload Complete! Successfully uploaded 20000 documents.
 Daily upload job finished at Mon Dec 29 08:23:04 +07 2025
+
+Daily upload job finished at Mon Dec 29 18:36:00 +07 2025
+/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/ACP/scripts/upload-csv-to-firestore.ts(2,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/ACP/scripts/upload-csv-to-firestore.ts(3,36): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(5,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/ACP/scripts/upload-csv-to-firestore.ts(9,36): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(12,20): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(19,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(22,40): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(23,36): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(26,28): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(73,42): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(74,45): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(152,13): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+
+    at createTSError (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1892:10
+    at Object.require.extensions.<computed> [as .ts] (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1480:32)
+    at Module._load (node:internal/modules/cjs/loader:1299:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [
+    2307, 2580, 2307,
+    2580, 2580, 2580,
+    2580, 2580, 2580,
+    2580, 2580, 2580
+  ]
+}
+Daily upload job finished at Mon Dec 29 18:36:06 +07 2025
+/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/ACP/scripts/upload-csv-to-firestore.ts(1,23): error TS2688: Cannot find type definition file for 'node'.
+src/ACP/scripts/upload-csv-to-firestore.ts(3,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/ACP/scripts/upload-csv-to-firestore.ts(4,36): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(6,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/ACP/scripts/upload-csv-to-firestore.ts(11,3): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(16,20): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(23,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(26,36): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(29,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(34,22): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(94,5): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(98,5): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/ACP/scripts/upload-csv-to-firestore.ts(190,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+
+    at createTSError (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1892:10
+    at Object.require.extensions.<computed> [as .ts] (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1480:32)
+    at Module._load (node:internal/modules/cjs/loader:1299:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [
+    2688, 2307, 2580,
+    2307, 2580, 2580,
+    2580, 2580, 2580,
+    2580, 2580, 2580,
+    2580
+  ]
+}
+Daily upload job finished at Mon Dec 29 18:36:55 +07 2025
+/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+src/ACP/scripts/upload-csv-to-firestore.ts(1,23): error TS2688: Cannot find type definition file for 'node'.
+src/ACP/scripts/upload-csv-to-firestore.ts(3,23): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/ACP/scripts/upload-csv-to-firestore.ts(4,36): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(6,21): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/ACP/scripts/upload-csv-to-firestore.ts(11,3): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(16,20): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(23,7): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(26,36): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(29,7): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(34,22): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(94,5): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(98,5): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/ACP/scripts/upload-csv-to-firestore.ts(190,7): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+
+    at createTSError (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:859:12)
+    at reportTSError (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:863:19)
+    at getOutput (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1077:36)
+    at Object.compile (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1433:41)
+    at Module.m._compile (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1892:10
+    at Object.require.extensions.<computed> [as .ts] (/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1480:32)
+    at Module._load (node:internal/modules/cjs/loader:1299:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14) {
+  diagnosticCodes: [
+    2688, 2307, 2591,
+    2307, 2591, 2591,
+    2591, 2591, 2591,
+    2591, 2591, 2591,
+    2591
+  ]
+}
+Daily upload job finished at Mon Dec 29 18:38:37 +07 2025
+[dotenv@17.2.3] injecting env (9) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....Q0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #1000000
+Already uploaded today: 980000 records.
+
+
+Upload Complete! Successfully uploaded 0 documents.
+[dotenv@17.2.3] injecting env (9) from .env.local -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....Q0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #1000000
+Already uploaded today: 980000 records.
+
+
+Upload Complete! Successfully uploaded 0 documents.
+node:internal/modules/cjs/loader:1420
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts
+    at node:internal/modules/cjs/loader:1420:15
+    at nextResolveSimple (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1004)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:2630
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1542
+    at resolveTsPaths (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:760)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1102
+    at m._resolveFilename (file:///Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-B7jrtLTO.mjs:1:789)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts'
+  ]
+}
+
+Node.js v25.2.1
+node:internal/modules/cjs/loader:1420
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts
+    at node:internal/modules/cjs/loader:1420:15
+    at nextResolveSimple (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1004)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:2630
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1542
+    at resolveTsPaths (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:760)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1102
+    at m._resolveFilename (file:///Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-B7jrtLTO.mjs:1:789)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts'
+  ]
+}
+
+Node.js v25.2.1
+[dotenv@17.2.3] injecting env (9) from .env.local -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....A0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #1000000
+Already uploaded today: 980000 records.
+
+
+Upload Complete! Successfully uploaded 0 documents.
+[dotenv@17.2.3] injecting env (9) from .env.local -- tip: ⚙️  enable debug logging with { debug: true }
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....A0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #1000000
+Already uploaded today: 980000 records.
+Skipping record 100000/1000000...Skipping record 200000/1000000...Skipping record 300000/1000000...Skipping record 400000/1000000...Skipping record 500000/1000000...Skipping record 600000/1000000...Skipping record 700000/1000000...Skipping record 800000/1000000...Skipping record 900000/1000000...Skipping record 1000000/1000000...
+
+Upload Complete! Successfully uploaded 0 documents.
+node:internal/modules/cjs/loader:1420
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts
+    at node:internal/modules/cjs/loader:1420:15
+    at nextResolveSimple (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1004)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:2630
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1542
+    at resolveTsPaths (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:760)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1102
+    at m._resolveFilename (file:///Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-B7jrtLTO.mjs:1:789)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts'
+  ]
+}
+
+Node.js v25.2.1
+node:internal/modules/cjs/loader:1420
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts
+    at node:internal/modules/cjs/loader:1420:15
+    at nextResolveSimple (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1004)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:2630
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1542
+    at resolveTsPaths (/Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:760)
+    at /Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-D46fvsV_.cjs:4:1102
+    at m._resolveFilename (file:///Users/kunanonjarat/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/register-B7jrtLTO.mjs:1:789)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/kunanonjarat/Desktop/Agentic-Commerce-Protocol/src/ACP/scripts/upload-csv-to-firestore.ts'
+  ]
+}
+
+Node.js v25.2.1
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....A0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #1000000
+Already uploaded today: 980000 records.
+Skipping record 100000/1000000...Skipping record 200000/1000000...Skipping record 300000/1000000...Skipping record 400000/1000000...Skipping record 500000/1000000...Skipping record 600000/1000000...Skipping record 700000/1000000...Skipping record 800000/1000000...Skipping record 900000/1000000...Skipping record 1000000/1000000...
+
+Upload Complete! Successfully uploaded 0 documents.
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: ⚙️  suppress all logs with { quiet: true }
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....A0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #999990
+Already uploaded today: 980000 records.
+Skipping record 100000/999990...Skipping record 200000/999990...Skipping record 300000/999990...Skipping record 400000/999990...Skipping record 500000/999990...Skipping record 600000/999990...Skipping record 700000/999990...Skipping record 800000/999990...Skipping record 900000/999990...
+Resuming upload at record #999991. Sample: 4467505482
+
+Batch failed: 401 Unauthorized
+{
+  "error": {
+    "code": 401,
+    "message": "Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+    "status": "UNAUTHENTICATED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "ACCESS_TOKEN_TYPE_UNSUPPORTED",
+        "metadata": {
+          "method": "google.firestore.v1.Firestore.BatchWrite",
+          "service": "firestore.googleapis.com"
+        }
+      }
+    ]
+  }
+}
+
+
+
+Upload Complete! Reason: End of CSV Stream. Successfully uploaded 10 documents.
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 449, Preview: ya29....A0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #999990
+Already uploaded today: 980000 records.
+Skipping record 100000/999990...Skipping record 200000/999990...Skipping record 300000/999990...[dotenv@17.2.3] injecting env (8) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....g0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #999990
+Already uploaded today: 980000 records.
+Skipping record 100000/999990...Skipping record 200000/999990...Skipping record 300000/999990...Skipping record 400000/999990...Skipping record 500000/999990...Skipping record 600000/999990...Skipping record 700000/999990...Skipping record 800000/999990...Skipping record 900000/999990...
+Resuming upload at record #999991. Sample: 4467505482
+
+
+Upload Complete! Reason: End of CSV Stream. Successfully uploaded 10 documents.
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....g0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #999990
+Already uploaded today: 980000 records.
+Skipping record 100000/999990...Skipping record 200000/999990...Skipping record 300000/999990...Skipping record 400000/999990...Skipping record 500000/999990...Skipping record 600000/999990...Skipping record 700000/999990...Skipping record 800000/999990...Skipping record 900000/999990...
+Resuming upload at record #999991. Sample: 4467505482
+
+
+Upload Complete! Reason: End of CSV Stream. Successfully uploaded 10 documents.
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+Starting upload to Firestore (REST API)...
+Failed to refresh token: {
+  error: {
+    code: 400,
+    message: 'INVALID_REFRESH_TOKEN',
+    status: 'INVALID_ARGUMENT'
+  }
+}
+Token Length: 258, Preview: ya29....g0211
+Project: gogocash-acp, Collection: products
+Target: 20000000 records
+
+Resuming from checkpoint: Record #999990
+Already uploaded today: 980000 records.
+Skipping record 100000/999990...Skipping record 200000/999990...Skipping record 300000/999990...Skipping record 400000/999990...Skipping record 500000/999990...Skipping record 600000/999990...Skipping record 700000/999990...Skipping record 800000/999990...Skipping record 900000/999990...
+Resuming upload at record #999991. Sample: 4467505482
+
+
+Upload Complete! Reason: End of CSV Stream. Successfully uploaded 10 documents.
