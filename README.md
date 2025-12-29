@@ -42,8 +42,20 @@ We have a unified script that handles permissions, builds, and deployment:
 *   **Upload Data**: Run `./run_daily_upload.sh` to upload CSV data to Firestore (Free Tier friendly).
 *   **Search Logic**: Located in `src/ACP/services/firestore.ts`.
 
+## 🧪 Testing
+We use **Playwright** for End-to-End testing.
+```bash
+npx playwright test
+```
+
+## 🔄 Sync & Handover
+*   **Repository Status**: Fully Synced.
+*   **Next Machine**: Clone this repo and run `./fix_and_deploy.sh` to initialize.
+*   **Data Upload**: Ensure you run `firebase login:print-access-token` daily before using `./run_daily_upload.sh`.
+
 ## 📂 Project Structure
 *   `src/ACP`: Core logic (Services, Config, Scripts).
+*   `tests/`: Playwright E2E tests.
 *   `app/api`: Next.js App Router API Enpoints (Cloud Functions).
 *   `public/openapi.yaml`: AI Agent Schema.
 
@@ -51,3 +63,4 @@ We have a unified script that handles permissions, builds, and deployment:
 *   [Handover Status](./wiki_content/Handover_Status.md)
 *   [Large Data Strategy](./LARGE_DATA_STRATEGY.md)
 *   [ChatGPT Integration Guide](./CHATGPT_INTEGRATION.md)
+
