@@ -4,10 +4,10 @@ info:
   description: API for searching products with cashback and checking user rewards.
   version: 1.0.0
 servers:
-  - url: https://gogocash-acp.web.app
-    description: Production Server (Firebase)
+  - url: https://asia-southeast1-gogocash-acp.cloudfunctions.net
+    description: Production Server (Firebase Functions)
 paths:
-  /api/searchProducts:
+  /searchProducts:
     get:
       operationId: searchProducts
       summary: Search for products
@@ -15,13 +15,13 @@ paths:
       parameters:
         - name: query
           in: query
-          description: Search keywords (e.g., "iphone 15", "running shoes")
+          description: Search keywords (e.g., "earphone under $50", "running shoes")
           required: true
           schema:
             type: string
         - name: user_email
           in: query
-          description: User's email address for linking/tracking (Required for cashback tracking)
+          description: User's email address for cashback tracking
           required: false
           schema:
             type: string
@@ -62,22 +62,16 @@ paths:
                         estimated_cashback:
                           type: number
 
-  /api/user/profile:
+  /getUserProfile:
     get:
       operationId: getUserProfile
       summary: Get User Profile
       description: Retrieve user balance, points, and tier.
       parameters:
-        - name: session_token
-          in: query
-          description: Auth token (Optional if email provided)
-          required: false
-          schema:
-            type: string
         - name: user_email
           in: query
-          description: User email (Optional alternative to token)
-          required: false
+          description: User email (Required)
+          required: true
           schema:
             type: string
       responses:
@@ -102,22 +96,16 @@ paths:
                       go_tier:
                         type: string
 
-  /api/user/cashback:
+  /getUserCashback:
     get:
       operationId: getUserCashback
       summary: Get Cashback History
       description: Retrieve list of past cashback transactions.
       parameters:
-        - name: session_token
-          in: query
-          description: Auth token (Optional if email provided)
-          required: false
-          schema:
-            type: string
         - name: user_email
           in: query
-          description: User email (Optional alternative to token)
-          required: false
+          description: User email (Required)
+          required: true
           schema:
             type: string
       responses:
