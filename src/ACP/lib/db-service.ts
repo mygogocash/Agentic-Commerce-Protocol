@@ -1,31 +1,9 @@
-import clientPromise from './config/mongodb';
+import clientPromise from '../config/mongodb';
 import { ObjectId } from 'mongodb';
-import { firestoreService } from './services/firestore';
+import { firestoreService } from '../services/firestore';
+import { User, Session, UserMyCashback } from '../types';
 
-export interface User {
-  id: string;
-  wallet_address?: string;
-  email?: string;
-  phone?: string;
-  joined_at: string;
-  balance: number; // Added from gogocash schema
-  go_points: number;
-  go_tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
-}
-
-export interface UserMyCashback {
-    id: string;
-    userId: string;
-    cashback_amount: number;
-    status: 'pending' | 'approved' | 'rejected';
-    created_at: string;
-}
-
-export interface Session {
-  token: string;
-  user_id: string;
-  expires_at: string;
-}
+// Interfaces moved to types.ts
 
 
 // In-memory storage (Fallback)

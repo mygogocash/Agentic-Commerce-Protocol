@@ -1,8 +1,7 @@
-
 import { getFirestore } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import { app } from '../config/firebase-admin'; // We need an admin config file
-import { User } from '../mock-db';
+import { User } from '../types';
 
 const db = getFirestore(app);
 const USERS_COL = 'users';

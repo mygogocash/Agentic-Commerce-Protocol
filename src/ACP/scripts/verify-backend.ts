@@ -2,7 +2,7 @@
 import { POST as LoginPOST } from '../../../app/api/auth/login/route';
 import { GET as ProfileGET } from '../../../app/api/user/profile/route';
 import { GET as CashbackGET } from '../../../app/api/user/cashback/route';
-import { db } from '../mock-db';
+import { db } from '../lib/db-service';
 
 // Mock helpers
 const createRequest = (url: string, method: string, body?: any, token?: string) => {

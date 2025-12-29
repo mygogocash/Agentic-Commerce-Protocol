@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/src/ACP/mock-db';
-import { merchantService } from '@/src/ACP/mock-merchants';
+import { db } from '@/src/ACP/lib/db-service';
+// import { merchantService } from '@/src/ACP/mock-merchants';
 import { lazadaService } from '@/src/ACP/lazada';
 import { shopeeService } from '@/src/ACP/shopee';
 
@@ -46,13 +46,13 @@ export async function GET(request: Request) {
         console.log(`[ChristmasAction] Searching for: ${query}`);
 
         // 3. Search Merchants
-        const [realResults, mockResults, shopeeResults] = await Promise.all([
+        const [realResults, shopeeResults] = await Promise.all([
             lazadaService.search(query),
-            merchantService.search(query),
+            // merchantService.search(query), // Removed legacy mock
             shopeeService.search(query)
         ]);
 
-        const rawResults = [...realResults, ...shopeeResults, ...mockResults];
+        const rawResults = [...realResults, ...shopeeResults];
 
         // 4. Filter/Deduplicate/Sort
         // Prioritize items with high ratings for gifts

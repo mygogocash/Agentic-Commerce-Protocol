@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/src/ACP/mock-db';
+import { db } from '@/src/ACP/lib/db-service';
 import { merchantService } from '@/src/ACP/mock-merchants';
 import { lazadaService } from '@/src/ACP/lazada';
 import { shopeeService } from '@/src/ACP/shopee';

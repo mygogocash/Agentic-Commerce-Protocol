@@ -1,8 +1,13 @@
 
-import { Product } from './mock-merchants';
+import { Product } from './types';
 
 const API_KEY = process.env.INVOLVE_API_KEY || 'general';
-const API_SECRET = process.env.INVOLVE_API_SECRET || 'o1pW16U54vPeK91Yut/SZHRVpuMqo8L5VTRQxjtD7iM=';
+const API_SECRET = process.env.INVOLVE_API_SECRET;
+
+if (!API_SECRET) {
+    throw new Error("Missing INVOLVE_API_SECRET environment variable");
+}
+
 const BASE_URL = 'https://api.involve.asia/api';
 
 let cachedToken: string | null = null;

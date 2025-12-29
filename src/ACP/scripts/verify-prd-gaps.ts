@@ -1,4 +1,4 @@
-import { db } from '../mock-db.js';
+import { db } from '../lib/db-service.js';
 
 // Mock Response for fetch usually needed, but here we can test logic directly or use local fetch if server running.
 // For robustness, let's test the DB logic directly and the URL construction.

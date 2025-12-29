@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { db } from '@/src/ACP/mock-db';
+import { db } from '@/src/ACP/lib/db-service';
 
 export async function POST(request: Request) {
     try {

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/src/ACP/mock-db';
-import { merchantService } from '@/src/ACP/mock-merchants';
+import { db } from '@/src/ACP/lib/db-service';
 import { lazadaService } from '@/src/ACP/lazada';
 import { shopeeService } from '@/src/ACP/shopee';
 
@@ -49,14 +48,6 @@ export async function GET(request: Request) {
 
         const rawResults = [...lazadaResults, ...shopeeResults];
         
-        // Fallback to mock data DISABLED
-        /*
-        if (rawResults.length === 0) {
-             const mockResults = await merchantService.search(query);
-             rawResults = [...mockResults];
-        }
-        */
-
         // 3. Filter/Deduplicate/Sort (Simplified)
         // In a real app, we would dedupe by name similarity here.
         const topResults = rawResults.slice(0, 5); // Take top 5 as per PRD

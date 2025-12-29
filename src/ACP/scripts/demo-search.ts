@@ -1,4 +1,4 @@
-import { db } from '../mock-db.js';
+import { db } from '../lib/db-service.js';
 import { shopeeService } from '../shopee.js';
 
 async function demo() {

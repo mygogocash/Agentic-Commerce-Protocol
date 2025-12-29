@@ -3,9 +3,9 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
-// Use dynamic import to ensure env vars are loaded BEFORE mock-db (and firebase-admin) initializes
+// Use dynamic import to ensure env vars are loaded BEFORE lib/db-service (and firebase-admin) initializes
 (async () => {
-    const { db } = await import('../mock-db');
+    const { db } = await import('../lib/db-service');
 
     async function testConnection() {
         console.log('Testing Firestore Connection via MockDB Façade...');

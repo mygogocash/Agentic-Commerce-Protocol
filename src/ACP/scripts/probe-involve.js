@@ -2,7 +2,7 @@
 // Native fetch is available in Node.js v18+
 
 const API_KEY = 'general';
-const API_SECRET = 'o1pW16U54vPeK91Yut/SZHRVpuMqo8L5VTRQxjtD7iM=';
+const API_SECRET = process.env.INVOLVE_API_SECRET || '';
 
 
 async function probe() {

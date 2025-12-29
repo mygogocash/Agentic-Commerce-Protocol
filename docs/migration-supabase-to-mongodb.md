@@ -357,7 +357,7 @@ async function migrate() {
   if (!process.env.MONGODB_URI) {
     console.error("Error: MONGODB_URI is not defined in .env.local");
     console.log(
-      "Please add: MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname"
+      "Please add: MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/dbname"
     );
     process.exit(1);
   }

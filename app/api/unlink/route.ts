@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/src/ACP/mock-db';
+import { db } from '@/src/ACP/lib/db-service';
 
 export const dynamic = 'force-dynamic';
 
