@@ -4,8 +4,8 @@ info:
   description: API for searching products with cashback and checking user rewards.
   version: 1.0.0
 servers:
-  - url: https://gogocash-acp.web.app
-    description: Production Server
+  - url: https://agentic-commerce-protocol.vercel.app
+    description: Production Server (Vercel)
 paths:
   /api/searchProducts:
     get:
