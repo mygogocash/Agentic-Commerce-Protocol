@@ -3,6 +3,7 @@
 You can now use your specific product data directly inside ChatGPT!
 
 ## Step 1: Deploy the Spec
+
 I have created the API definition file at `public/openapi.yaml`.
 You need to deploy this change first so ChatGPT can see it.
 
@@ -25,6 +26,7 @@ Your goal is to help users find the best products and check their rewards status
     *   ALWAYS ask for clarification if the query is too vague (e.g., "shoes").
     *   Suggest searching for "top rated" or strict keywords.
     *   When results are returned, display them in a clean list with:
+        *   **Image**: Render the image using Markdown: `![Name](image_url)`
         *   Product Name
         *   Price (formatted in original currency)
         *   Platform (e.g., Shopee)
@@ -73,7 +75,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Successful search results
           content:
             application/json:
@@ -106,7 +108,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: User profile found
           content:
             application/json:
@@ -118,11 +120,13 @@ paths:
                   user:
                     type: object
 ```
+
 </details>
 
 ## Step 4: Test it!
+
 In the Preview pane (right side), type:
+
 > "Find me a cheap mechanical keyboard"
 
 ChatGPT will call your API and show real products!
-

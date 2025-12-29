@@ -11,7 +11,7 @@
     *   **Status**: 20,000 records uploaded on Dec 29. Resume tomorrow.
 
 3.  **Documentation**
-    *   [ChatGPT Integration](./CHATGPT_INTEGRATION.md) (OpenAPI Spec ready).
+    *   [ChatGPT Integration](./CHATGPT_INTEGRATION.md) (OpenAPI Spec ready + Image Instructions added).
     *   [Wiki](./wiki_content/) prepared.
 
 ## 🛑 Critical Blocker: Deployment
