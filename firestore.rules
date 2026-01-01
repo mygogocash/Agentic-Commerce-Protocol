@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to products collection for API access
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false;  // Only admin SDK can write
+    }
+    
+    // Users collection - restrict access
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Cashback transactions - restrict access
+    match /cashback_transactions/{transactionId} {
+      allow read: if request.auth != null;
+      allow write: if false;  // Only admin SDK can write
+    }
+    
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

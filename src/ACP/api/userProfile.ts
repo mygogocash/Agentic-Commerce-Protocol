@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { db } from '../lib/db-service';
+import { loginUser } from '../services/gogocash-api';
 
 // Add CORS headers for ChatGPT integration
 function addCorsHeaders(response: NextResponse) {
@@ -16,33 +16,24 @@ export async function OPTIONS(request: Request) {
 
 export async function GET(request: Request) {
     try {
-        let token = '';
+        const { searchParams } = new URL(request.url);
+        const email = searchParams.get('user_email');
 
-        const authHeader = request.headers.get('Authorization');
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            token = authHeader.split(' ')[1];
-        } else {
-            // Fallback to Query Param (for Custom GPTs)
-            const { searchParams } = new URL(request.url);
-            token = searchParams.get('session_token') || '';
+        if (!email) {
+            const response = NextResponse.json({ 
+                error: 'user_email parameter is required',
+            }, { status: 400 });
+            return addCorsHeaders(response);
         }
 
-        // if (!token) ... we allow email fallback now, check happens later
-
-        let user = null;
-        if (token) {
-            user = await db.sessions.verify(token);
-        } else {
-            // Check for user_email param (Simplified Auth for GPT)
-            const { searchParams } = new URL(request.url);
-            const email = searchParams.get('user_email');
-            if (email) {
-                user = await db.users.findByEmail(email);
-            }
-        }
+        // Call GoGoCash API to login/get user profile
+        const user = await loginUser(email);
 
         if (!user) {
-            const response = NextResponse.json({ error: 'Invalid Session or Email not found' }, { status: 401 });
+            const response = NextResponse.json({ 
+                error: 'Account not found. Please create an account at https://app.gogocash.co first.',
+                signup_url: 'https://app.gogocash.co'
+            }, { status: 401 });
             return addCorsHeaders(response);
         }
 
@@ -74,3 +65,4 @@ export async function GET(request: Request) {
         return addCorsHeaders(response);
     }
 }
+

@@ -112,7 +112,7 @@ exports.searchProducts = (0, https_1.onRequest)((req, res) => {
     });
 });
 // User Profile API endpoint
-exports.getUserProfile = (0, https_1.onRequest)((req, res) => {
+exports.getUserProfile = (0, https_1.onRequest)(async (req, res) => {
     setCorsHeaders(res);
     if (req.method === 'OPTIONS') {
         res.status(200).send('');
@@ -123,17 +123,36 @@ exports.getUserProfile = (0, https_1.onRequest)((req, res) => {
         res.status(400).json({ error: 'user_email parameter is required' });
         return;
     }
-    // Mock user profile
-    res.json({
-        user: {
-            id: 'firebase_user_1',
-            email: userEmail,
-            balance: 150.75,
-            go_points: 1250,
-            go_tier: 'Silver',
-            joined_at: '2024-01-15T10:30:00Z'
+    try {
+        // Call real GoGoCash API
+        const response = await fetch('https://api.gogocash.co/auth/log-in/ai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail })
+        });
+        if (!response.ok) {
+            res.status(401).json({
+                error: 'Account not found. Please create an account at https://app.gogocash.co first.',
+                signup_url: 'https://app.gogocash.co'
+            });
+            return;
         }
-    });
+        const data = await response.json();
+        res.json({
+            user: {
+                id: data.id || data._id || data.userId,
+                email: data.email || userEmail,
+                balance: data.balance || data.cashback_balance || 0,
+                go_points: data.go_points || data.goPoints || data.points || 0,
+                go_tier: data.go_tier || data.goTier || data.tier || 'Bronze',
+                joined_at: data.joined_at || data.createdAt || data.created_at
+            }
+        });
+    }
+    catch (error) {
+        console.error('Error calling GoGoCash API:', error);
+        res.status(500).json({ error: 'Failed to fetch user profile' });
+    }
 });
 // User Cashback API endpoint
 exports.getUserCashback = (0, https_1.onRequest)((req, res) => {

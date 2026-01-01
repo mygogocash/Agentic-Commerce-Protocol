@@ -4,8 +4,8 @@ info:
   description: API for searching products with cashback and checking user rewards.
   version: 1.0.0
 servers:
-  - url: https://asia-southeast1-gogocash-acp.cloudfunctions.net
-    description: Production Server (Firebase Functions)
+  - url: https://gogocash-acp.web.app/api
+    description: Production Server (Next.js Hosting)
 paths:
   /searchProducts:
     get:
@@ -54,15 +54,22 @@ paths:
                           type: number
                         affiliate_link:
                           type: string
-                          description: Clickable link for the user (Contains tracking)
+                          description: Clickable link for the user (Contains tracking for cashback)
+                        product_card_url:
+                          type: string
+                          description: Link to view product details page with image
                         image_url:
                           type: string
+                          description: Product image URL
                         merchant_name:
                           type: string
                         estimated_cashback:
                           type: number
+                        rating:
+                          type: number
 
-  /getUserProfile:
+
+  /user/profile:
     get:
       operationId: getUserProfile
       summary: Get User Profile
@@ -96,7 +103,7 @@ paths:
                       go_tier:
                         type: string
 
-  /getUserCashback:
+  /user/cashback:
     get:
       operationId: getUserCashback
       summary: Get Cashback History
