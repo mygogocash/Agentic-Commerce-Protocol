@@ -1,39 +1,33 @@
 openapi: 3.1.0
 info:
   title: Agentic Commerce Protocol (ACP)
-  description: API for searching products with cashback and checking user rewards.
+  description: API for searching products and checking user cashback rewards.
   version: 1.0.0
 servers:
-  - url: https://gogocash-acp.web.app/api
-    description: Production Server (Next.js Hosting)
+  - url: https://gogocash-acp.web.app
+    description: Production Server (Firebase)
 paths:
-  /searchProducts:
+  /api/searchProducts:
     get:
       operationId: searchProducts
       summary: Search for products
-      description: Search the product catalog. Returns products with cashback affiliate links.
+      description: Search the product catalog using keywords (e.g., "iphone", "dress").
       parameters:
         - name: query
           in: query
-          description: Search keywords (e.g., "earphone under $50", "running shoes")
+          description: Search keywords
           required: true
-          schema:
-            type: string
-        - name: user_email
-          in: query
-          description: User's email address for cashback tracking
-          required: false
           schema:
             type: string
         - name: limit
           in: query
-          description: Number of results (default 5)
+          description: Number of results to return (default 5)
           required: false
           schema:
             type: integer
       responses:
-        "200":
-          description: Successful search
+        '200':
+          description: Successful search results
           content:
             application/json:
               schema:
@@ -52,87 +46,39 @@ paths:
                           type: string
                         product_price:
                           type: number
-                        affiliate_link:
+                        product_url:
                           type: string
-                          description: Clickable link for the user (Contains tracking for cashback)
-                        product_card_url:
-                          type: string
-                          description: Link to view product details page with image
                         image_url:
                           type: string
-                          description: Product image URL
                         merchant_name:
                           type: string
                         estimated_cashback:
                           type: number
-                        rating:
-                          type: number
-
-
-  /user/profile:
+  /api/check-mongo-user:
     get:
-      operationId: getUserProfile
-      summary: Get User Profile
-      description: Retrieve user balance, points, and tier.
+      operationId: checkUser
+      summary: Check User Profile
+      description: Retrieve legacy user data and cashback history by email or phone.
       parameters:
-        - name: user_email
+        - name: email
           in: query
-          description: User email (Required)
-          required: true
+          required: false
+          schema:
+            type: string
+        - name: phone
+          in: query
+          required: false
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: User profile found
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  found:
+                    type: boolean
                   user:
                     type: object
-                    properties:
-                      id:
-                        type: string
-                      email:
-                        type: string
-                      balance:
-                        type: number
-                      go_points:
-                        type: number
-                      go_tier:
-                        type: string
-
-  /user/cashback:
-    get:
-      operationId: getUserCashback
-      summary: Get Cashback History
-      description: Retrieve list of past cashback transactions.
-      parameters:
-        - name: user_email
-          in: query
-          description: User email (Required)
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: History found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  cashbacks:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        amount:
-                          type: number
-                        description:
-                          type: string
-                        status:
-                          type: string
-                        createdAt:
-                          type: string

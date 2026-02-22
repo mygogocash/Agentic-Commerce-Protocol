@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/src/ACP/lib/db-service';
+import { db } from '@/src/ACP/mock-db';
+import { merchantService } from '@/src/ACP/mock-merchants';
 import { lazadaService } from '@/src/ACP/lazada';
 import { shopeeService } from '@/src/ACP/shopee';
 
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
         if (token) {
             user = await db.sessions.verify(token);
             if (!user) {
-                return NextResponse.json(
+                 return NextResponse.json(
                     { error: 'Session expired. Please login again.' },
                     { status: 401 }
                 );
@@ -39,8 +40,11 @@ export async function GET(request: Request) {
 
         console.log(`[ChristmasAction] Searching for: ${query}`);
 
+        // 3. Search Merchants
         // 3. Search Merchants - ENFORCED SHOPEE ONLY FOR PROTOCOL ALIGNMENT
         const [shopeeResults] = await Promise.all([
+            // lazadaService.search(query), // DISABLED
+            // merchantService.search(query), // DISABLED
             shopeeService.search(query)
         ]);
 

@@ -1,53 +1,27 @@
 
 import { NextResponse } from 'next/server';
-import { db } from '../lib/db-service';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const target = searchParams.get('url');
-    // We can accept a session_token to securely identify the user
-    // OR we can accept a direct 'u' param if the frontend already knows the ID
-    const sessionToken = searchParams.get('session_token');
-    let userId = searchParams.get('u'); 
+    // const userId = searchParams.get('u'); // Optional: tracking user
 
     if (!target) {
         return NextResponse.json({ error: 'Missing target URL' }, { status: 400 });
     }
 
     try {
-        const userEmail = searchParams.get('user_email');
-        
-        // If we have a session token but no direct user ID, try to resolve the user
-        if (!userId) {
-            if (sessionToken) {
-                const sessionUser = await db.sessions.verify(sessionToken);
-                if (sessionUser) {
-                    // STRICT CHECK: Verify user exists in MongoDB "users" collection
-                    const dbUser = await db.users.findById(sessionUser.id);
-                    if (dbUser) userId = dbUser.id;
-                }
-            } else if (userEmail) {
-                // Email-based lookup (ChatGPT Integration)
-                const dbUser = await db.users.findByEmail(userEmail);
-                if (dbUser) userId = dbUser.id;
-            }
-        }
+        // Decode if it was base64 encoded (optional, but cleaner URL)
+        // For now, we assume simple URI component encoding or direct URL
+        // If we want to support base64:
+        // const decoded = Buffer.from(target, 'base64').toString('utf-8');
 
         const destination = decodeURIComponent(target);
-        let finalUrl = destination;
-
-        // Inject sub_id if we managed to find a User ID
-        if (userId) {
-            // Check if URL already has query params
-            const separator = finalUrl.includes('?') ? '&' : '?';
-            finalUrl = `${finalUrl}${separator}sub_id=${userId}`;
-            console.log(`[Redirect] Tracking User: ${userId} -> sub_id`);
-        }
 
         // TODO: Log analytics here (click tracking)
-        console.log(`[Redirect] Redirecting to: ${finalUrl}`);
+        console.log(`[Redirect] Redirecting to: ${destination}`);
 
-        return NextResponse.redirect(finalUrl);
+        return NextResponse.redirect(destination);
     } catch (e) {
         return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }

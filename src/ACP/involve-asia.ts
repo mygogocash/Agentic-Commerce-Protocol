@@ -1,13 +1,8 @@
 
-import { Product } from './types';
+import { Product } from './mock-merchants';
 
 const API_KEY = process.env.INVOLVE_API_KEY || 'general';
-const API_SECRET = process.env.INVOLVE_API_SECRET;
-
-if (!API_SECRET) {
-    console.warn("Missing INVOLVE_API_SECRET environment variable - Involve Asia service will be disabled");
-}
-
+const API_SECRET = process.env.INVOLVE_API_SECRET || 'o1pW16U54vPeK91Yut/SZHRVpuMqo8L5VTRQxjtD7iM=';
 const BASE_URL = 'https://api.involve.asia/api';
 
 let cachedToken: string | null = null;
@@ -15,11 +10,6 @@ let tokenExpiry = 0;
 let cachedOffers: any[] = [];
 
 async function authenticate() {
-    if (!API_SECRET) {
-        console.warn("Cannot authenticate with Involve Asia - missing API_SECRET");
-        return null;
-    }
-
     if (cachedToken && Date.now() < tokenExpiry) {
         return cachedToken;
     }

@@ -1,5 +1,5 @@
 
-import { db } from '../lib/db-service';
+import { db } from '../mock-db';
 
 async function verifyAuthLogic() {
     console.log('--- Verifying Auth Logic (Unit Test) ---');
