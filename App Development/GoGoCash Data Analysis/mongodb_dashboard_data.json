@@ -1,0 +1,1323 @@
+{
+  "fetchedAt": "2026-02-24T02:32:27.792069+00:00",
+  "sourceDashboardUrl": "https://charts.mongodb.com/charts-gogocash-rcllzbu/public/dashboards/6944b9f0-3617-4668-85bf-12ff668495b6",
+  "dashboard": {
+    "dashboardId": "6944b9f0-3617-4668-85bf-12ff668495b6",
+    "title": "GoGoCash Product Dashboard",
+    "description": "This sample dashboard analyzes a collection of product event metadata.",
+    "layoutCount": 15,
+    "filters": [
+      {
+        "_id": "6944b9f0-3617-4562-884c-12ff668495e5",
+        "disabled": false,
+        "type": "String",
+        "settings": {
+          "allOthers": true,
+          "values": []
+        },
+        "name": "os_name",
+        "linkedFields": [
+          {
+            "dataSourceId": "6943ff92-e2f8-4df2-8aa4-45bfd2abb4c2",
+            "fieldPath": "metadata.os_name"
+          }
+        ]
+      },
+      {
+        "_id": "6944b9f0-3617-4747-8306-12ff668495e6",
+        "disabled": false,
+        "type": "String",
+        "settings": {
+          "allOthers": true,
+          "values": []
+        },
+        "name": "browser",
+        "linkedFields": [
+          {
+            "dataSourceId": "6943ff92-e2f8-4df2-8aa4-45bfd2abb4c2",
+            "fieldPath": "metadata.browser"
+          }
+        ]
+      }
+    ]
+  },
+  "items": [
+    {
+      "dashboardItemId": "6944b9f0-3617-42aa-8c58-12ff668495cc",
+      "title": "Total # Active Organizations",
+      "subtitle": "",
+      "chartType": "Number",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "value": 676
+        }
+      ],
+      "metadata": {
+        "age": 1771899794150,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900322061
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4465-8176-12ff668495b7",
+      "title": "Versions in Use",
+      "subtitle": "",
+      "chartType": "Donut",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "value": 96547,
+          "label": "v1.23.0"
+        },
+        {
+          "value": 1641,
+          "label": "v1.22.0"
+        },
+        {
+          "value": 463,
+          "label": "1.9.1"
+        },
+        {
+          "value": 62,
+          "label": "1.19.0"
+        },
+        {
+          "value": 4,
+          "label": "1.6.0"
+        },
+        {
+          "value": 3,
+          "label": "v1.20.2"
+        },
+        {
+          "value": 3,
+          "label": "1.9.0"
+        },
+        {
+          "value": 2,
+          "label": "1.20.1"
+        }
+      ],
+      "metadata": {
+        "age": 1771899795347,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900323872
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4704-8c64-12ff668495ba",
+      "title": "Number of&nbsp; Errors",
+      "subtitle": "",
+      "chartType": "Gauge",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "value": 889
+        }
+      ],
+      "metadata": {
+        "age": 1771899796409,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900325684
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4fec-8f66-12ff668495bd",
+      "title": "User Operating Systems",
+      "subtitle": "Click on an operating system name to highlight and filter charts in this dashboard",
+      "chartType": "Donut",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "value": 47325,
+          "label": "Windows"
+        },
+        {
+          "value": 43302,
+          "label": "OS X"
+        },
+        {
+          "value": 5433,
+          "label": "Linux"
+        },
+        {
+          "value": 1284,
+          "label": "Android"
+        },
+        {
+          "value": 1080,
+          "label": "iOS"
+        },
+        {
+          "value": 728,
+          "label": "Ubuntu"
+        },
+        {
+          "value": 48,
+          "label": "Chrome OS"
+        },
+        {
+          "value": 3,
+          "label": "Tizen"
+        }
+      ],
+      "metadata": {
+        "age": 1771899797871,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900327497
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4631-859d-12ff668495c0",
+      "title": "User Browsers",
+      "subtitle": "Click on a browser name to highlight and filter charts in this dashboard",
+      "chartType": "Donut",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "value": 462,
+          "label": "Chrome"
+        },
+        {
+          "value": 45,
+          "label": "Safari"
+        },
+        {
+          "value": 35,
+          "label": "Firefox"
+        },
+        {
+          "value": 13,
+          "label": "Chrome Mobile"
+        },
+        {
+          "value": 5,
+          "label": "Opera"
+        },
+        {
+          "value": 2,
+          "label": "Samsung Internet"
+        },
+        {
+          "value": 1,
+          "label": "Firefox Mobile"
+        },
+        {
+          "value": 1,
+          "label": "Maxthon"
+        },
+        {
+          "value": 1,
+          "label": "Electron"
+        }
+      ],
+      "metadata": {
+        "age": 1771899798822,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900329410
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4c0c-8ada-12ff668495c3",
+      "title": "# Daily Active Users",
+      "subtitle": "",
+      "chartType": "Grouped Column",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 1
+          },
+          "y": 95
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 2
+          },
+          "y": 105
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 3
+          },
+          "y": 88
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 4
+          },
+          "y": 70
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 5
+          },
+          "y": 72
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 6
+          },
+          "y": 113
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 7
+          },
+          "y": 119
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 8
+          },
+          "y": 108
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 9
+          },
+          "y": 106
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 10
+          },
+          "y": 109
+        }
+      ],
+      "metadata": {
+        "age": 1771899800294,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900331135
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4c87-8a08-12ff668495c5",
+      "title": "Top 10 Chart Types Added",
+      "subtitle": "",
+      "chartType": "Grouped Bar",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": 18998,
+          "y": "Number"
+        },
+        {
+          "x": 5240,
+          "y": "Area"
+        },
+        {
+          "x": 3409,
+          "y": "Grouped Column"
+        },
+        {
+          "x": 2022,
+          "y": "Donut"
+        },
+        {
+          "x": 1683,
+          "y": "Stacked Column"
+        },
+        {
+          "x": 1332,
+          "y": "Gauge"
+        },
+        {
+          "x": 1001,
+          "y": "Data Table"
+        },
+        {
+          "x": 996,
+          "y": "Grouped Bar"
+        },
+        {
+          "x": 875,
+          "y": "Scatter"
+        },
+        {
+          "x": 858,
+          "y": "Line"
+        }
+      ],
+      "metadata": {
+        "age": 1771899800990,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900333088
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-49a8-8c09-12ff668495c8",
+      "title": "Top 10 Events Fired",
+      "subtitle": "",
+      "chartType": "Grouped Bar",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": 50990,
+          "y": "render"
+        },
+        {
+          "x": 37457,
+          "y": "rendered"
+        },
+        {
+          "x": 6420,
+          "y": "refreshed"
+        },
+        {
+          "x": 1580,
+          "y": "error"
+        },
+        {
+          "x": 889,
+          "y": "failed"
+        },
+        {
+          "x": 772,
+          "y": "opened"
+        },
+        {
+          "x": 608,
+          "y": "max_response_size"
+        },
+        {
+          "x": 379,
+          "y": "login"
+        },
+        {
+          "x": 376,
+          "y": "tested"
+        },
+        {
+          "x": 178,
+          "y": "modified"
+        }
+      ],
+      "metadata": {
+        "age": 1771899802053,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900334960
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4bb5-8528-12ff668495ca",
+      "title": "# Daily Active Organizations",
+      "subtitle": "",
+      "chartType": "Grouped Column",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 1
+          },
+          "y": 165
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 2
+          },
+          "y": 182
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 3
+          },
+          "y": 176
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 4
+          },
+          "y": 156
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 5
+          },
+          "y": 156
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 6
+          },
+          "y": 179
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 7
+          },
+          "y": 213
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 8
+          },
+          "y": 187
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 9
+          },
+          "y": 173
+        },
+        {
+          "x": {
+            "year": 2021,
+            "month": 3,
+            "date": 10
+          },
+          "y": 189
+        }
+      ],
+      "metadata": {
+        "age": 1771899803755,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900336780
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-414a-852c-12ff668495cf",
+      "title": "Total # Active Users",
+      "subtitle": "",
+      "chartType": "Number",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "value": 539
+        }
+      ],
+      "metadata": {
+        "age": 1771899804373,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900338531
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4a98-8454-12ff668495d2",
+      "title": "Embedding Renders per Day of the Week",
+      "subtitle": "",
+      "chartType": "Stacked Column",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 1205,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 3348,
+          "color": "iframe"
+        },
+        {
+          "x": {
+            "day": 8
+          },
+          "y": 2730,
+          "color": "iframe"
+        },
+        {
+          "x": {
+            "day": 8
+          },
+          "y": 850,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 9
+          },
+          "y": 2526,
+          "color": "iframe"
+        },
+        {
+          "x": {
+            "day": 9
+          },
+          "y": 526,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 10
+          },
+          "y": 3181,
+          "color": "iframe"
+        },
+        {
+          "x": {
+            "day": 10
+          },
+          "y": 1364,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 1127,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 5427,
+          "color": "iframe"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 1200,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 5686,
+          "color": "iframe"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 1460,
+          "color": "sdk"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 6827,
+          "color": "iframe"
+        }
+      ],
+      "metadata": {
+        "age": 1771899805956,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900340387
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4ca6-8479-12ff668495d6",
+      "title": "# Organizations by Embedding Types",
+      "subtitle": "",
+      "chartType": "Donut",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "label": "iframe",
+          "value": 94
+        },
+        {
+          "label": "sdk",
+          "value": 30
+        }
+      ],
+      "metadata": {
+        "age": 1771899807091,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900342263
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-4c5a-8108-12ff668495db",
+      "title": "Daily # Events by Version&nbsp;",
+      "subtitle": "By day of the week",
+      "chartType": "Stacked Column",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 29,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 501,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 1,
+          "color": "1.6.0"
+        },
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 12,
+          "color": "1.19.0"
+        },
+        {
+          "x": {
+            "day": 7
+          },
+          "y": 9285,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 8
+          },
+          "y": 9573,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 8
+          },
+          "y": 166,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 8
+          },
+          "y": 16,
+          "color": "1.19.0"
+        },
+        {
+          "x": {
+            "day": 8
+          },
+          "y": 31,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 9
+          },
+          "y": 77,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 9
+          },
+          "y": 44,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 9
+          },
+          "y": 9793,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 10
+          },
+          "y": 66,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 10
+          },
+          "y": 9793,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 10
+          },
+          "y": 72,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 2,
+          "color": "1.9.0"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 278,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 154,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 3,
+          "color": "1.19.0"
+        },
+        {
+          "x": {
+            "day": 11
+          },
+          "y": 19384,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 19247,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 64,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 1,
+          "color": "v1.20.2"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 2,
+          "color": "1.19.0"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 1,
+          "color": "1.9.0"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 1,
+          "color": "1.6.0"
+        },
+        {
+          "x": {
+            "day": 12
+          },
+          "y": 379,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 19472,
+          "color": "v1.23.0"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 2,
+          "color": "v1.20.2"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 2,
+          "color": "1.6.0"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 174,
+          "color": "v1.22.0"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 69,
+          "color": "1.9.1"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 29,
+          "color": "1.19.0"
+        },
+        {
+          "x": {
+            "day": 13
+          },
+          "y": 2,
+          "color": "1.20.1"
+        }
+      ],
+      "metadata": {
+        "age": 1771899808953,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900344071
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-40b0-859f-12ff668495de",
+      "title": "Top Errors",
+      "subtitle": "",
+      "chartType": "Data Table",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "group": "Connection time out",
+          "value": 183,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 67,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "User not found",
+          "value": 177,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 69,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "HTTP 403",
+          "value": 173,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 63,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "Update is not permitted",
+          "value": 166,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 66,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "HTTP 404",
+          "value": 165,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 65,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "Failed to process request",
+          "value": 159,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 61,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "Can not load data",
+          "value": 153,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 64,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "HTTP 500",
+          "value": 152,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 64,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "HTTP 401",
+          "value": 142,
+          "group_series_0": "v1.23.0",
+          "value_series_0": 52,
+          "group_series_1": "Server"
+        },
+        {
+          "group": "Can not load data",
+          "value": 9,
+          "group_series_0": "1.9.1",
+          "value_series_0": 3,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 403",
+          "value": 9,
+          "group_series_0": "1.9.1",
+          "value_series_0": 3,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 401",
+          "value": 9,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "User not found",
+          "value": 9,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 404",
+          "value": 8,
+          "group_series_0": "1.9.1",
+          "value_series_0": 3,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 401",
+          "value": 8,
+          "group_series_0": "1.9.1",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 403",
+          "value": 7,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Connection time out",
+          "value": 7,
+          "group_series_0": "1.9.1",
+          "value_series_0": 3,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Can not load data",
+          "value": 6,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 500",
+          "value": 6,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Connection time out",
+          "value": 6,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Update is not permitted",
+          "value": 6,
+          "group_series_0": "1.9.1",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 404",
+          "value": 4,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Update is not permitted",
+          "value": 4,
+          "group_series_0": "1.19.0",
+          "value_series_0": 1,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Failed to process request",
+          "value": 3,
+          "group_series_0": "1.9.1",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "HTTP 500",
+          "value": 3,
+          "group_series_0": "1.9.1",
+          "value_series_0": 3,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "Failed to process request",
+          "value": 3,
+          "group_series_0": "1.19.0",
+          "value_series_0": 2,
+          "group_series_1": "Frontend"
+        },
+        {
+          "group": "User not found",
+          "value": 3,
+          "group_series_0": "1.9.1",
+          "value_series_0": 3,
+          "group_series_1": "Frontend"
+        }
+      ],
+      "metadata": {
+        "age": 1771899809484,
+        "fromCache": true,
+        "maxDocLimit": 50000,
+        "now": 1771900345850
+      }
+    },
+    {
+      "dashboardItemId": "6944b9f0-3617-49bf-8c27-12ff668495e2",
+      "title": "# Events by Resource and Action",
+      "subtitle": "",
+      "chartType": "Stacked Bar",
+      "itemType": "chart",
+      "status": "complete",
+      "attempts": 1,
+      "documents": [
+        {
+          "x": 608,
+          "color": "max_response_size",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 104,
+          "color": "cancelled",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 76,
+          "color": "added",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 50990,
+          "color": "render",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 178,
+          "color": "modified",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 15,
+          "color": "edit_invoked",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 11,
+          "color": "deleted",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 2,
+          "color": "add_invoked",
+          "y": "DashboardItem"
+        },
+        {
+          "x": 37457,
+          "color": "rendered",
+          "y": "EmbeddedChart"
+        },
+        {
+          "x": 889,
+          "color": "failed",
+          "y": "EmbeddedChart"
+        },
+        {
+          "x": 6420,
+          "color": "refreshed",
+          "y": "Dashboard"
+        },
+        {
+          "x": 10,
+          "color": "deleted",
+          "y": "Dashboard"
+        },
+        {
+          "x": 698,
+          "color": "opened",
+          "y": "Dashboard"
+        },
+        {
+          "x": 6,
+          "color": "added",
+          "y": "Dashboard"
+        },
+        {
+          "x": 1580,
+          "color": "error",
+          "y": "Error"
+        },
+        {
+          "x": 21,
+          "color": "added",
+          "y": "DataSource"
+        },
+        {
+          "x": 376,
+          "color": "tested",
+          "y": "DataSource"
+        },
+        {
+          "x": 5,
+          "color": "pipeline_added",
+          "y": "DataSource"
+        },
+        {
+          "x": 26,
+          "color": "deleted",
+          "y": "DataSource"
+        },
+        {
+          "x": 4,
+          "color": "alias_modified",
+          "y": "DataSource"
+        },
+        {
+          "x": 3,
+          "color": "pipeline_modified",
+          "y": "DataSource"
+        },
+        {
+          "x": 1,
+          "color": "pipeline_deleted",
+          "y": "DataSource"
+        },
+        {
+          "x": 379,
+          "color": "login",
+          "y": "User"
+        },
+        {
+          "x": 74,
+          "color": "opened",
+          "y": "Welcome"
+        },
+        {
+          "x": 1,
+          "color": "cancelled",
+          "y": "Welcome"
+        },
+        {
+          "x": 21,
+          "color": "completed",
+          "y": "DataSourceWizard"
+        },
+        {
+          "x": 34,
+          "color": "invoked",
+          "y": "DataSourceWizard"
+        },
+        {
+          "x": 11,
+          "color": "cancelled",
+          "y": "DataSourceWizard"
+        }
+      ],
+      "metadata": {
+        "age": 1771899810680,
+        "fromCache": true,
+        "maxDocLimit": 5000,
+        "now": 1771900347695
+      }
+    }
+  ]
+}
