@@ -1,0 +1,177 @@
+"use client";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { OptionsCountries } from "@/interfaces/country";
+import { setPendingAuthIntent } from "@/lib/analytics";
+import { auth, googleProvider } from "@/lib/firebaseClient";
+import { signInWithPopup, FacebookAuthProvider, TwitterAuthProvider } from "firebase/auth";
+import { signIn } from "next-auth/react";
+import React from "react";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+
+const useFirebaseLogin = () => {
+  // Implementation of the hook
+  // Get referral_id safely without useSearchParams to avoid Suspense issues
+  const [referral_id, setReferralId] = useState<string | undefined>(undefined);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const [selectCountry, setSelectCountry] =
+    React.useState<OptionsCountries | null>({
+      label: "Thailand",
+      code: "TH",
+      value: "Thailand",
+    });
+  useEffect(() => {
+    // Access search params on client side only, after mount
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("referral_id");
+      if (id) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setReferralId(id);
+      }
+    }
+  }, []);
+
+  const handleModalAfterLogin = () => {
+    // Implement modal logic here if needed
+    window.sessionStorage.setItem("showModalAfterLogin", "true");
+  };
+  const handleLoginGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user) {
+        const token = await result.user.getIdToken();
+        setPendingAuthIntent({
+          type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
+          method: "google",
+        });
+        signIn("firebase", {
+          jwt: token,
+          email: result.user.email,
+          provider: "google",
+          referral_id,
+          country: selectCountry?.label || "Thailand",
+          pathname,
+          callbackUrl: "/",
+          redirect: false,
+        }).then((response) => {
+          if (!response?.ok) {
+            if (response?.status === 401) {
+              router.push("/register");
+            }
+            toast.error("Login failed. Please register.");
+          } else {
+            handleModalAfterLogin();
+            router.push("/");
+          }
+        });
+        // return token;
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Login failed. Please register.");
+    }
+  };
+
+  const handleLoginX = async () => {
+    try {
+      const provider = new TwitterAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        const token = await result.user.getIdToken();
+        setPendingAuthIntent({
+          type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
+          method: "twitter",
+        });
+        signIn("firebase", {
+          jwt: token,
+          email: result.user.email,
+          provider: "twitter",
+          referral_id,
+          pathname,
+          country: selectCountry?.label || "Thailand",
+          callbackUrl: "/",
+          redirect: false,
+        }).then((response) => {
+          if (!response?.ok) {
+            if (response?.status === 401) {
+              toast.error(`Login failed. Please register.`);
+              router.push("/register");
+            } else {
+              toast.error(
+                `${
+                  pathname?.includes("register") ? "Registration" : "Login"
+                } failed. Please try again.`
+              );
+            }
+          } else {
+            handleModalAfterLogin();
+            router.push("/");
+          }
+        });
+        // return token;
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Login failed. Please register.");
+    }
+  };
+
+  const handleLoginFacebook = async () => {
+    try {
+      const provider = new FacebookAuthProvider();
+      provider.addScope('email');
+      const result = await signInWithPopup(auth, provider);
+      console.log('result', result);
+      
+      if (result.user) {
+        const token = await result.user.getIdToken();
+        setPendingAuthIntent({
+          type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
+          method: "facebook",
+        });
+        signIn("firebase", {
+          jwt: token,
+          email: result.user.email,
+          provider: "facebook",
+          referral_id,
+          pathname,
+          country: selectCountry?.label || "Thailand",
+          callbackUrl: "/",
+          redirect: false,
+        }).then((response) => {
+          if (!response?.ok) {
+            if (response?.status === 401) {
+              toast.error(`Login failed. Please register.`);
+              router.push("/register");
+            } else {
+              toast.error(
+                `${
+                  pathname?.includes("register") ? "Registration" : "Login"
+                } failed. Please try again.`
+              );
+            }
+          } else {
+            handleModalAfterLogin();
+            router.push("/");
+          }
+        });
+        // return token;
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Login failed. Please register.");
+    }
+  };
+  return {
+    handleLoginGoogle,
+    selectCountry,
+    setSelectCountry,
+    handleLoginX,
+    handleLoginFacebook,
+  };
+};
+
+export default useFirebaseLogin;
