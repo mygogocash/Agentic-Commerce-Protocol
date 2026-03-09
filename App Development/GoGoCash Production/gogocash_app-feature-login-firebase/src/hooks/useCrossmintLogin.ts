@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-import { setPendingAuthIntent, track } from "@/lib/analytics";
 
 interface LoginState {
   isLoggingIn: boolean;
@@ -108,7 +107,6 @@ const useCrossmintLogin = () => {
       // const userData = response.user;
 
       // Sign in to NextAuth with proper error handling
-      setPendingAuthIntent({ type: "login_completed", method: "crossmint" });
       const result = await signIn("crossmint", {
         jwt: jwt,
         userId: user?.id,
@@ -137,7 +135,6 @@ const useCrossmintLogin = () => {
           error: null,
         }));
         window.sessionStorage.setItem("isAfterLogin", "false");
-        track("wallet_connected", { wallet_type: "crossmint" });
       }
       if (result?.error) {
         throw new Error(`NextAuth error: ${result.error}`);

@@ -10,7 +10,6 @@ import Button from "@/components/common/Button";
 import { useRouter } from "@/i18n/navigation";
 import { sendOtp } from "../firebase/fc";
 import toast from "react-hot-toast";
-import { track } from "@/lib/analytics";
 const VerifyNumberPhone = () => {
   const router = useRouter();
   const [country, setCountry] = useState<CountryCode>("TH");
@@ -40,7 +39,6 @@ const VerifyNumberPhone = () => {
       sendOtp(normalized!)
         .then(() => {
           toast.success("OTP sent successfully");
-          track("onboarding_step_completed", { step_number: 2, step_name: "phone_verification" });
           router.push(
             `/profile/cf-phone?phone=${encodeURIComponent(normalized!)}`
           );

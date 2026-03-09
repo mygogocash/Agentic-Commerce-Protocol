@@ -1,782 +1,538 @@
-# GoGoCash App (Consumer-Facing Web Application)
+# GoGoCash Web App (Feature: Firebase Login)
 
-> **Production URL**: https://app.gogocash.co  
-> **Framework**: Next.js 16 · React 19 · TypeScript 5  
-> **Styling**: Tailwind CSS 4 + Material-UI 7  
-> **Auth**: Firebase + Crossmint + NextAuth.js  
+This repository contains the GoGoCash frontend built with Next.js App Router. It is a client-heavy application focused on cashback discovery, user profile management, referral and quest features, and wallet withdrawal flows (bank transfer + Web3).
 
-GoGoCash is a **cashback platform** where users earn rewards on every purchase through affiliate merchant links. This is the consumer-facing web app that handles merchant browsing, cashback tracking, quest/ranking, wallet management, and user profile.
+## Quick Start
 
----
+1. Copy `.env.example` to `.env.local`.
+2. Install dependencies with `npm install`.
+3. Run the app with `npm run dev`.
+4. Make sure the backend repo is running at the URL in `NEXT_PUBLIC_API_URL`.
+5. Open `http://localhost:3000/en`.
 
-## Table of Contents
+## Related Repositories
 
-- [Architecture Overview](#architecture-overview)
-- [Directory Structure](#directory-structure)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Routing & Pages](#routing--pages)
-- [Authentication Flow](#authentication-flow)
-- [Provider Hierarchy](#provider-hierarchy)
-- [Feature Modules](#feature-modules)
-- [API Integration](#api-integration)
-- [Analytics System](#analytics-system)
-- [Internationalization (i18n)](#internationalization-i18n)
-- [Web3 / Crossmint Integration](#web3--crossmint-integration)
-- [Styling Guide](#styling-guide)
-- [Key Libraries](#key-libraries)
-- [Deployment](#deployment)
-- [Data Models](#data-models)
+- `../gogocash_api-feature-login-firebase`: backend contract source of truth for auth, offers, profile, wallet, withdrawals, quests, and referrals.
+- `../gogocash_admin-main`: internal dashboard that shares some API contracts but not the customer-facing routing or auth UX.
 
----
+## AI Handoff
 
-## Architecture Overview
+- Read these files first: `src/app/layout.tsx`, `src/providers/ProviderDefault.tsx`, `src/lib/axios/client.ts`, `src/lib/authFirebase.ts`, `src/features/auth/component/LoginComponent.tsx`.
+- **Analytics / Meta Pixel**: tracking lives in `src/lib/metaPixel.ts` (event helpers) and `src/components/analytics/MetaPixel.tsx` (base code loader). Cookie consent is handled by `src/hooks/useConsent.ts` + `src/components/consent/CookieConsent.tsx`. All `fbq()` calls are consent-gated — the pixel only loads after the user accepts. See section 3.7 below for full details.
+- Active auth is Firebase-based, but Crossmint still wraps parts of the runtime. Do not remove Crossmint plumbing until subscription and wallet flows are verified in the browser.
+- Most features are client components backed by React Query and thin Axios services. If the API shape changes, update typings, query hooks, and UI consumers together.
+- Browser verification matters for auth callbacks, analytics, GTM, metadata, and favicon changes. Do not stop at lint or build output for those areas.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Next.js App Router                       │
-│                    (Server-Side Rendering)                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │   Home   │  │   Shop   │  │  Quest   │  │ Profile  │       │
-│  │  Banner  │  │  Detail  │  │ Ranking  │  │  Wallet  │       │
-│  │ Trending │  │ Category │  │  Points  │  │ Withdraw │       │
-│  │ Popular  │  │  Search  │  │  Referral│  │ Settings │       │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
-│       │              │              │              │             │
-│  ┌────▼──────────────▼──────────────▼──────────────▼──────┐     │
-│  │              Feature Modules (src/features/)           │     │
-│  │         Business logic + Domain components             │     │
-│  └────────────────────────┬───────────────────────────────┘     │
-│                           │                                     │
-│  ┌────────────────────────▼───────────────────────────────┐     │
-│  │                   Shared Layer                          │     │
-│  │  ┌─────────┐ ┌───────────┐ ┌──────────┐ ┌──────────┐ │     │
-│  │  │  Hooks  │ │ Providers │ │Components│ │   Lib    │ │     │
-│  │  │         │ │           │ │ (common) │ │          │ │     │
-│  │  │useCross-│ │Analytics  │ │  Button  │ │  Axios   │ │     │
-│  │  │mintLogin│ │Crossmint  │ │  Input   │ │ Services │ │     │
-│  │  │useFire- │ │Session    │ │  Card    │ │  Auth    │ │     │
-│  │  │baseLogin│ │Query      │ │  Layout  │ │Analytics │ │     │
-│  │  └─────────┘ └───────────┘ └──────────┘ └──────────┘ │     │
-│  └────────────────────────────────────────────────────────┘     │
-│                           │                                     │
-│  ┌────────────────────────▼───────────────────────────────┐     │
-│  │                   External Services                     │     │
-│  │   GoGoCash API  ·  Firebase  ·  Crossmint  ·  GA4     │     │
-│  └────────────────────────────────────────────────────────┘     │
-└─────────────────────────────────────────────────────────────────┘
+## 1) Architecture At A Glance
+
+### Core architecture decisions
+
+- Framework: Next.js 16 (App Router) with TypeScript.
+- Rendering style: mostly client components (`"use client"`) for fast UI interactivity and SDK compatibility.
+- Data layer: `@tanstack/react-query` + Axios wrapper with centralized auth token injection.
+- Auth session: NextAuth JWT strategy.
+- Identity providers:
+  - Active: Firebase-based credential flow (`provider id: firebase`) with Google/X/Facebook/Telegram entry points.
+  - Integrated but partially legacy: Crossmint provider + context is mounted globally for wallet/subscription integrations.
+- i18n: `next-intl` route-based localization (`/en/*`, `/th/*`).
+- Web3: `ethers` + MetaMask for on-chain withdrawal transactions.
+
+### High-level runtime graph
+
+```mermaid
+flowchart LR
+  User["Browser User"] --> Router["Next.js App Router (src/app)"]
+  Router --> Providers["Global Providers (ProviderDefault)"]
+  Providers --> Session["NextAuth SessionProvider"]
+  Providers --> Query["React Query Client"]
+  Providers --> Crossmint["Crossmint Providers + Ready Context"]
+  Router --> Features["Feature Modules (src/features/*)"]
+  Features --> Axios["Axios Client (src/lib/axios/client.ts)"]
+  Axios --> Backend["GoGoCash API (NEXT_PUBLIC_API_URL)"]
+  Features --> Chain["EVM Contracts (withdraw hooks)"]
 ```
 
-**Key Design Decisions:**
-- **Feature-based architecture** — each business domain has its own folder under `src/features/`
-- **Server Components by default** — only client components where interactivity needed
-- **Multi-provider auth** — Firebase (Google, Twitter) + Crossmint (Web3) unified via NextAuth sessions
-- **Analytics-first** — GA4 + Meta Pixel + GTM baked into root provider with automatic page tracking
-- **i18n routing** — Thai + English + Japanese with locale-prefixed URLs
+## 2) Repository Structure
 
----
-
-## Directory Structure
-
-```
+```text
 src/
-├── app/                              # Next.js App Router
-│   ├── layout.tsx                    # Root layout (metadata, fonts, analytics bootstrap)
-│   ├── globals.css                   # Tailwind theme + custom CSS
-│   ├── [locale]/                     # i18n dynamic segment
-│   │   ├── layout.tsx               # NextIntlClientProvider wrapper
-│   │   ├── page.tsx                 # Home page (Banner, Trending, Popular, etc.)
-│   │   ├── auth/callback/           # OAuth callback handler
-│   │   ├── login/                   # Firebase login page
-│   │   ├── register/                # Firebase registration page
-│   │   ├── shop/                    # Shop listing & detail pages
-│   │   │   ├── page.tsx            # All shops listing
-│   │   │   └── [id]/page.tsx       # Individual shop detail
-│   │   ├── category/               # Category pages
-│   │   ├── quest/                   # Quest & ranking pages
-│   │   └── profile/(profile)/      # User profile (nested layout)
-│   └── api/auth/[...nextauth]/      # NextAuth API route handler
-│
-├── features/                         # 🔑 Feature-Based Architecture
-│   ├── home/component/              # Home page sections
-│   │   ├── Banner.tsx               # Hero carousel banner
-│   │   ├── Trending.tsx             # Trending merchants section
-│   │   ├── Popular.tsx              # Popular merchants grid
-│   │   ├── Special.tsx              # Special offers section
-│   │   ├── Extra.tsx                # Extra offers section
-│   │   ├── CategoryHome.tsx         # Category grid on home
-│   │   └── ModalAfterLogin.tsx      # Post-login marketing modal
-│   ├── auth/                        # Authentication feature
-│   │   ├── common/                  # Shared auth utilities
-│   │   └── component/               # Login/register forms
-│   ├── shop/                        # Shop listing & detail
-│   ├── quest/                       # Quest system & rankings
-│   ├── wallet/component/            # Wallet management UI
-│   ├── profile/                     # User profile management
-│   │   ├── component/              # Profile UI components
-│   │   ├── firebase/               # Firebase profile settings
-│   │   └── layout/                 # Profile page layout
-│   ├── category/                    # Category browsing
-│   ├── referral/                    # Referral system
-│   ├── search/                      # Search functionality
-│   ├── subscription/                # Subscription management
-│   └── transaction/                 # Transaction history
-│
-├── components/                       # Shared/Reusable Components
-│   ├── analytics/
-│   │   └── AnalyticsBootstrap.tsx   # GA4 gtag.js injection (server-rendered)
-│   ├── common/                      # Generic UI components
-│   │   ├── Button.tsx, Input.tsx, OtpInput.tsx
-│   │   ├── Step.tsx, Title.tsx, ViewAll.tsx
-│   │   ├── CrossmintErrorBoundary.tsx
-│   │   └── card/                    # Card components
-│   ├── layouts/                     # App layout components
-│   │   ├── ClientLayoutWrapper.tsx  # Main layout (Header + Footer)
-│   │   ├── Header.tsx, SubHeader.tsx
-│   │   ├── Footer.tsx, FooterMobile.tsx
-│   │   └── SubProfile.tsx, SubProfileInfo.tsx
-│   ├── icons/                       # SVG icon components
-│   └── auth/                        # Auth UI components
-│
-├── providers/                        # React Context Providers
-│   ├── ProviderDefault.tsx          # 🔑 Root provider (wraps everything)
-│   ├── AnalyticsProvider.tsx        # Page view tracking, user identification
-│   ├── CrossmintLoginContext.tsx    # Crossmint auth state context
-│   └── CrossmintReadyContext.tsx    # Crossmint SDK readiness state
-│
-├── hooks/                            # Custom React Hooks
-│   ├── useCrossmintLogin.ts         # Crossmint auth + wallet management
-│   ├── useFirebaseLogin.ts          # Firebase popup auth flow
-│   ├── useSafeCrossmint.ts          # Safe Crossmint SDK access
-│   └── useWithdraw*.ts              # Withdrawal operation hooks
-│
-├── lib/                              # Core Libraries & Services
-│   ├── analytics/                   # 📊 Analytics System (GA4 + Meta + GTM)
-│   │   ├── config.ts               # Analytics configuration from env vars
-│   │   ├── tracker.ts              # Event tracking, consent, identity
-│   │   ├── types.ts                # Event types, payload types
-│   │   ├── utils.ts                # Hashing, route naming, sanitization
-│   │   ├── storage.ts              # LocalStorage/SessionStorage management
-│   │   └── index.ts                # Barrel export
-│   ├── axios/
-│   │   └── client.ts               # Axios instance + auth interceptors
-│   ├── query/
-│   │   └── queryClient.ts          # TanStack Query configuration
-│   ├── services/                    # API service layer
-│   │   ├── auth.ts                 # signInCrossmint, signInFirebase, registerFirebase
-│   │   ├── offer.ts                # favoriteOffer
-│   │   ├── withdraw.ts             # createMethodWithdraw, updateMethodWithdraw
-│   │   └── detail.ts               # Offer detail fetcher
-│   ├── crossmint/
-│   │   └── SettingCrossmint.tsx     # Crossmint SDK provider setup
-│   ├── authFirebase.ts             # NextAuth config with Firebase credentials
-│   ├── firebaseClient.ts           # Firebase client SDK initialization
-│   └── utils.ts                    # cn(), formatAddress, currency conversion
-│
-├── constants/                        # Static Data & Config
-│   ├── Metadata.ts                  # SEO metadata (title, description, OG)
-│   ├── Data.ts                      # Footer links, social icons
-│   └── abi/                         # Smart contract ABIs
-│
-├── interfaces/                       # TypeScript Definitions
-│   ├── auth.ts                      # User, IResponseLogin, IDataSignIn
-│   ├── offer.ts                     # DataOffer, TypeCommissions
-│   ├── quest.ts                     # QuestRankResponse
-│   ├── withdraw.ts                  # ResponseWithdrawCheck, FeeData
-│   ├── country.ts, rate.ts, referral.ts, shop.ts
-│   └── userMyCashback.ts
-│
-├── i18n/                            # Internationalization Config
-│   ├── routing.ts                   # defineRouting({ locales, defaultLocale })
-│   └── navigation.ts               # createNavigation (Link, redirect, useRouter)
-│
-├── messages/                        # Translation Files
-│   ├── en.json                     # English translations
-│   ├── th.json                     # Thai translations
-│   └── jp.json                     # Japanese translations
-│
-└── proxy.ts                         # (Unused duplicate of middleware)
+  app/
+    layout.tsx                     # Root HTML shell + ProviderDefault
+    [locale]/
+      layout.tsx                   # Locale shell + ClientLayoutWrapper
+      page.tsx                     # Home
+      login/page.tsx
+      register/page.tsx
+      quest/page.tsx
+      shop/page.tsx
+      shop/[id]/page.tsx
+      category/page.tsx
+      category/[name]/page.tsx
+      auth/callback/page.tsx       # Telegram/Firebase callback bridge
+      (profile)/                   # Auth-protected profile area
+        layout.tsx                 # AuthGuard + profile sidebar layout
+        profile/*
+        wallet/page.tsx
+        withdraw/*
+        method/*
+        favorite/page.tsx
+        subscription/page.tsx
+    api/
+      auth/[...nextauth]/route.ts  # NextAuth endpoint
+      countries/route.ts           # REST Countries proxy
+      hello/route.ts               # health/demo endpoint
+
+  components/
+    analytics/
+      GoogleTagManager.tsx         # GTM + GA4 script injection
+      MetaPixel.tsx                # Meta Pixel base code (consent-gated)
+      MerchantListTracker.tsx      # GA4 merchant list view tracking
+      RouteAnalyticsTracker.tsx    # GA4 page view tracking
+    consent/
+      CookieConsent.tsx            # PDPA cookie consent banner
+    layouts/                       # Header/SubHeader/Footer/Profile shell
+    auth/                          # Auth guards
+    common/                        # Generic UI elements
+    icons/
+
+  features/
+    auth/ home/ shop/ category/ search/
+    profile/ wallet/ transaction/
+    quest/ referral/ subscription/
+
+  hooks/
+    useFirebaseLogin.ts
+    useConsent.ts                  # Cookie consent state (localStorage)
+    useCrossmintLogin.ts
+    useWithdrawWeb3.ts
+    useWithdrawMyCashback.ts
+    useSafeCrossmint.ts
+
+  lib/
+    analytics.ts                   # GA4/GTM event helpers
+    metaPixel.ts                   # Meta Pixel fbq() helpers (consent-gated)
+    axios/client.ts                # HTTP client + auth interceptors
+    authFirebase.ts                # Active NextAuth config
+    auth.ts                        # Legacy Crossmint NextAuth config
+    firebaseClient.ts              # Firebase browser setup
+    query/queryClient.ts           # React Query defaults
+    services/*.ts                  # Domain API wrappers
+    crossmint/SettingCrossmint.tsx
+
+  i18n/
+    routing.ts navigation.ts request.ts
+
+  interfaces/
+    auth.ts offer.ts withdraw.ts ...
+
+  messages/
+    en.json th.json jp.json
 ```
 
----
+## 3) Runtime Layers In Detail
 
-## Getting Started
+## 3.1 App Router and Layout Composition
 
-### Prerequisites
-- Node.js 20+
-- Yarn (recommended) or npm
+### Root layout
+- File: `src/app/layout.tsx`
+- Responsibilities:
+  - Sets metadata and global CSS.
+  - Wraps all pages with `ProviderDefault`.
+  - Injects Facebook domain verification meta tag.
 
-### Install & Run
+### Locale layout
+- File: `src/app/[locale]/layout.tsx`
+- Responsibilities:
+  - Wraps locale routes in `NextIntlClientProvider`.
+  - Wraps visible app frame in `ClientLayoutWrapper`.
 
-```bash
-# Install dependencies
-yarn install
+### Profile route-group layout
+- File: `src/app/[locale]/(profile)/layout.tsx`
+- Responsibilities:
+  - Uses `AuthGuard` to protect profile routes.
+  - Applies profile sidebar shell (`SubProfile`).
 
-# Development server (http://localhost:3000)
-yarn dev
+### Layout gating behavior
+- `ClientLayoutWrapper` waits for Crossmint ready signal before rendering Header/SubHeader/Footer.
+- This avoids calling Crossmint-dependent hooks before SDK is initialized.
 
-# Production build
-yarn build
+## 3.2 Global Provider Stack
 
-# Start production server
-yarn start
+File: `src/providers/ProviderDefault.tsx`
+
+Provider order:
+
+1. `QueryClientProvider`
+2. `SessionProvider`
+3. `ClientOnly` mount guard
+4. `CrossmintReadyProvider`
+5. `CrossmintErrorBoundary`
+6. `SettingCrossmint` (dynamic import, `ssr: false`)
+7. `CrossmintLoginContext`
+8. `Toaster`
+9. `ReactQueryDevtools`
+
+Why this matters:
+- Prevents SSR/hydration issues from SDKs requiring browser globals.
+- Ensures one place controls React Query, auth session, and Crossmint readiness.
+
+## 3.3 Authentication Architecture
+
+### Active NextAuth configuration
+- Route: `src/app/api/auth/[...nextauth]/route.ts`
+- Active options file: `src/lib/authFirebase.ts`
+
+### Provider and credential flow
+- NextAuth credential provider id: `firebase`.
+- Supported branches in `authorize`:
+  - `type === "telegram"`: reads `/user/profile` with provided JWT.
+  - Default Firebase social flow:
+    - If pathname is `/register` -> calls `/auth/register`.
+    - Else -> calls `/auth/log-in`.
+
+### Session/JWT callbacks
+- Token stores app-specific identity fields (`_id`, `wallet`, `username`, region/mobile/birthdate/gender, etc.).
+- Session maps token fields to `session.user`.
+- Session strategy: JWT.
+
+### Frontend login entry points
+- `src/features/auth/component/LoginComponent.tsx`
+  - Social login buttons use `useFirebaseLogin` for Google/X/Facebook.
+  - Telegram OAuth handled via Telegram redirect + callback params.
+  - Final sign-in always enters NextAuth through `signIn("firebase", ...)`.
+
+### Axios auth propagation
+- File: `src/lib/axios/client.ts`
+- Request interceptor:
+  - Reads current session with `getSession()`.
+  - Adds `Authorization: Bearer <session.user.access_token>`.
+- Response interceptor:
+  - Auto-signout on token-invalid messages (Firebase token invalid/expired, bad algorithm).
+
+### Crossmint auth notes
+- `src/lib/auth.ts` defines `provider id: crossmint` but is not wired in API route currently.
+- `useCrossmintLogin.ts` still calls `signIn("crossmint", ...)`, which indicates legacy/in-transition behavior.
+- `SettingCrossmint` + Crossmint contexts are still used by parts of the app (for readiness and hosted checkout-related UX).
+
+## 3.4 Data Access Layer
+
+### React Query
+- Centralized query client in `src/lib/query/queryClient.ts`.
+- Defaults:
+  - `refetchOnWindowFocus: false`
+  - `refetchOnMount: false`
+  - `refetchOnReconnect: false`
+  - `staleTime: 0`
+
+### HTTP helpers
+- `fetcher` -> GET
+- `fetcherPost` -> POST
+- `fetcherPut` -> PUT
+
+These wrappers are used directly in feature components and hook-level queries/mutations.
+
+### Service wrappers
+- `src/lib/services/auth.ts`
+- `src/lib/services/detail.ts`
+- `src/lib/services/offer.ts`
+- `src/lib/services/withdraw.ts`
+
+Pattern: thin endpoint wrappers around the shared Axios client.
+
+## 3.5 Internationalization Layer
+
+Files:
+- `middleware.ts`
+- `src/i18n/routing.ts`
+- `src/i18n/navigation.ts`
+- `src/i18n/request.ts`
+- `src/messages/en.json`, `src/messages/th.json`
+
+Behavior:
+- Locale-prefixed routing enabled via `next-intl` middleware.
+- Active locales in routing: `en`, `th` (default `en` in `src/i18n/routing.ts`).
+- Message bundles loaded dynamically from `src/messages/{locale}.json`.
+
+Note:
+- `next-intl.config.ts` currently uses a different default locale (`th`) from `src/i18n/routing.ts` (`en`). Keep these aligned to avoid locale drift.
+
+## 3.6 UI/Layout Layer
+
+### Global navigation
+- `Header.tsx`: logo, search, category popup, profile bar, locale/country modal.
+- `SubHeader.tsx`: quick category links + help link behavior by user region.
+- `Footer.tsx` / `FooterMobile.tsx`: desktop/mobile bottom navigation and links.
+
+### Route-protected profile shell
+- `SubProfile.tsx` renders left navigation for profile-related pages.
+- `AuthGuard.tsx` redirects unauthenticated users to `/login`.
+
+## 3.7 Analytics & Meta Pixel
+
+### Architecture overview
+
+The app has two parallel analytics layers:
+1. **GA4 / GTM**: existing — fires via `src/lib/analytics.ts` → `window.dataLayer` → `window.gtag`.
+2. **Meta Pixel**: new — fires via `src/lib/metaPixel.ts` → `window.fbq`.
+
+Both layers are gated behind `NEXT_PUBLIC_ANALYTICS_ENABLED`. The Meta Pixel is additionally gated behind **cookie consent** (PDPA compliance).
+
+### Consent flow
+
+```mermaid
+flowchart TD
+    Visit["User visits site"] --> Banner["CookieConsent banner shown"]
+    Banner -->|"Accept"| Grant["localStorage: 'granted'"]
+    Banner -->|"Decline"| Deny["localStorage: 'denied'"]
+    Grant --> Load["MetaPixel.tsx loads fbq base code"]
+    Load --> Init["fbq('init') + fbq('track', 'PageView')"]
+    Deny --> NoPixel["No pixel loaded, no tracking"]
 ```
 
----
+### Meta Pixel event map
 
-## Environment Variables
+| PRD Req | Event | Type | Trigger location | Parameters |
+|---------|-------|------|------------------|------------|
+| REQ-002 | `ViewContent` | Standard | `ShopDetail.tsx` on mount | `content_name`, `content_category`, `content_ids`, `value`, `currency` |
+| REQ-003 | `CompleteRegistration` | Standard | `useFirebaseLogin.ts` on successful `/register` | `status: true` |
+| REQ-004 | `InitiateCheckout` | Standard | `ShopDetail.tsx` → `openLinkOffer()` | — |
+| REQ-005 | `Purchase` | Standard | `WithdrawMyCashback.tsx` (crypto + bank) | `value`, `currency` |
+| REQ-006 | `QuestStarted` | Custom | `MissionList.tsx` on task click | — |
 
-Create `.env.local` (development) or `.env.production.local` (production):
-
-```bash
-# ─── API ───
-NEXT_PUBLIC_API_URL=https://api.gogocash.co
-
-# ─── Firebase Authentication ───
-NEXT_PUBLIC_FIREBASE_API_KEY=...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-NEXT_PUBLIC_FIREBASE_APP_ID=...
-NEXTAUTH_SECRET=<random-secret-for-jwt-signing>
-NEXTAUTH_URL=http://localhost:3000
-
-# ─── Crossmint Web3 ───
-NEXT_PUBLIC_CROSSMINT_API_KEY=ck_production_...    # Must start with ck_ or sk_
-
-# ─── Analytics ───
-NEXT_PUBLIC_ANALYTICS_ENABLED=true
-NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-NEXT_PUBLIC_META_PIXEL_ID=123456789
-NEXT_PUBLIC_META_USER_SALT=gogocash-meta-v1
-NEXT_PUBLIC_ANALYTICS_DEBUG=false
-
-# ─── OAuth (for NextAuth social providers) ───
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-```
-
----
-
-## Routing & Pages
-
-Uses **Next.js App Router** with **next-intl** for locale-prefixed URLs.
-
-| URL Pattern | Page | Description |
-|-------------|------|-------------|
-| `/` or `/th` | Home | Banner, Trending, Popular, Categories |
-| `/login` | Login | Firebase auth (Google, Twitter) |
-| `/register` | Register | New user registration |
-| `/shop` | Shop List | Browse all merchants |
-| `/shop/[id]` | Shop Detail | Merchant detail with cashback info |
-| `/category` | Categories | Browse by category |
-| `/quest` | Quest & Ranking | Leaderboard, points system |
-| `/profile` | Profile | User settings, wallet, withdrawal |
-
-**Locale Routing**: URLs are prefixed with locale when not default:
-- `/en/shop` → English shop page
-- `/th/shop` → Thai shop page (default, prefix optional)
-
-**Middleware** (`middleware.ts`): Intercepts requests to inject locale. Excludes `/api`, `/_next`, static files.
-
----
-
-## Authentication Flow
-
-The app supports **three authentication methods**, all unified through NextAuth.js sessions:
-
-### Flow Diagram
-
-```
-┌────────────────────────────────────────────────────────────┐
-│                    User clicks "Login"                      │
-└────────────┬──────────────────────┬────────────────────────┘
-             │                      │
-     ┌───────▼───────┐    ┌────────▼────────┐
-     │  Firebase      │    │  Crossmint      │
-     │  (Google/X)    │    │  (Web3 Wallet)  │
-     └───────┬───────┘    └────────┬────────┘
-             │                      │
-     Firebase popup         SDK login flow
-     Get ID token           Get JWT token
-             │                      │
-     ┌───────▼───────┐    ┌────────▼────────┐
-     │ NextAuth       │    │ Backend API     │
-     │ signIn()       │    │ /auth/sign-in   │
-     │ → POST to API  │    │                 │
-     │   /auth/log-in │    │                 │
-     └───────┬───────┘    └────────┬────────┘
-             │                      │
-             └──────┬───────────────┘
-                    │
-         ┌──────────▼──────────┐
-         │   NextAuth Session  │
-         │   (JWT with token)  │
-         │                     │
-         │  access_token       │
-         │  user._id           │
-         │  user.email         │
-         │  user.wallet        │
-         │  auth_provider      │
-         └─────────────────────┘
-                    │
-         Axios interceptor reads
-         session.access_token and
-         adds Bearer header to all
-         subsequent API requests
-```
-
-### Key Files
+### Key files
 
 | File | Role |
 |------|------|
-| `src/lib/authFirebase.ts` | NextAuth configuration with Firebase CredentialsProvider |
-| `src/lib/firebaseClient.ts` | Firebase client SDK init (Google, Twitter providers) |
-| `src/hooks/useFirebaseLogin.ts` | Hook: Firebase popup → NextAuth signIn |
-| `src/hooks/useCrossmintLogin.ts` | Hook: Crossmint SDK → Backend API auth |
-| `src/lib/services/auth.ts` | API calls: signInFirebase, registerFirebase, signInCrossmint |
-| `src/app/api/auth/[...nextauth]/route.ts` | NextAuth API route handler |
+| `src/lib/metaPixel.ts` | Type-safe `fbq()` wrappers, consent checks, debug logging |
+| `src/components/analytics/MetaPixel.tsx` | Loads pixel base code `<script>` after consent |
+| `src/hooks/useConsent.ts` | Cookie consent state hook (localStorage `gogocash_cookie_consent`) |
+| `src/components/consent/CookieConsent.tsx` | PDPA consent banner UI |
+| `src/lib/analytics.ts` | GA4/GTM event helpers (existing) |
+| `src/components/analytics/GoogleTagManager.tsx` | GTM/GA4 script loader (existing) |
 
-### Token Expiration
+### Security: No PII
 
-The Axios response interceptor detects expired tokens:
-```
-"Firebase ID token" error → sign out + redirect
-"invalid algorithm" error → sign out + redirect
-"jwt expired" error       → sign out + redirect
-```
+All `fbq()` calls transmit only: merchant names, offer/merchant IDs, cashback amounts, currency codes, and boolean flags. **No email, phone, wallet address, or user identifier is ever sent to Meta.**
 
----
+### Custom audiences (manual)
 
-## Provider Hierarchy
+These audiences should be created in **Meta Events Manager → Audiences**:
+- All Visitors (30 days)
+- ViewContent viewers (14 days)
+- InitiateCheckout but NOT Purchase (7 days)
+- Purchasers — exclusion list (180 days)
+- Registered Users (30 days)
 
-The app uses a **deeply nested provider stack** in `src/providers/ProviderDefault.tsx`:
+## 4) Feature Modules (What Owns What)
 
-```
-<html>
-  <head>
-    <AnalyticsBootstrap />           ← GA4 gtag.js (server-rendered <script>)
-  </head>
-  <body>
-    <NextIntlClientProvider>          ← i18n translations
-      <ProviderDefault>              ← Root provider wrapper
-        <QueryClientProvider>         ← TanStack React Query (API caching)
-          <SessionProvider>           ← NextAuth session state
-            <ClientOnly>             ← Prevents SSR hydration mismatches
-              <AnalyticsProvider>     ← Page tracking, user identity
-                <CrossmintReadyProvider>  ← SDK initialization state
-                  <CrossmintErrorBoundary>
-                    <SettingCrossmint>     ← Crossmint SDK init
-                      <CrossmintLoginContext>  ← User auth state
-                        {children}             ← Page content
-                        <Toaster />            ← Toast notifications
-                      </CrossmintLoginContext>
-                    </SettingCrossmint>
-                  </CrossmintErrorBoundary>
-                </CrossmintReadyProvider>
-              </AnalyticsProvider>
-            </ClientOnly>
-          </SessionProvider>
-        </QueryClientProvider>
-        <ReactQueryDevtools />         ← Dev only
-      </ProviderDefault>
-    </NextIntlClientProvider>
-  </body>
-</html>
-```
+| Module | Main responsibility | Key files |
+|---|---|---|
+| `auth` | Login/register UI, Telegram + Firebase social entry points | `src/features/auth/component/LoginComponent.tsx`, `src/hooks/useFirebaseLogin.ts` |
+| `home` | Landing sections (banner, trending, popular, special categories) | `src/features/home/component/*` |
+| `shop` | Offer list, offer detail, deeplink generation, coupons, favorites | `src/features/shop/component/List.tsx`, `ShopDetail.tsx` |
+| `category` | Category index and category-specific offer listing | `src/features/category/component/*` |
+| `search` | Header search popper with offer lookup | `src/features/search/component/SearchShop.tsx` |
+| `profile` | User profile info, phone verification, payout methods, favorites/offers | `src/features/profile/component/*` |
+| `wallet` | Withdraw UI and method selection | `src/features/wallet/component/MyWalletWithdraw.tsx` |
+| `transaction` | Wallet summary, conversion list, withdraw history | `src/features/transaction/component/WalletTransaction.tsx` |
+| `quest` | Ranking, extra-point offers, quest-related shop list | `src/features/quest/component/QuestPage.tsx` |
+| `referral` | Referral link sharing and referral activity listing | `src/features/referral/ReferralPage.tsx` |
+| `subscription` | Crossmint hosted checkout integration | `src/features/subscription/SubscriptionPage.tsx` |
 
-**Why this order matters:**
-1. **QueryClient** must wrap everything that fetches data
-2. **SessionProvider** must be above any component that reads auth state
-3. **ClientOnly** prevents Crossmint SSR errors (Web3 requires `window`)
-4. **AnalyticsProvider** needs session data for user identification
-5. **CrossmintReady** signals when SDK is initialized
-6. **CrossmintLogin** depends on SDK being ready
+## 5) API Surface Used By Frontend
 
----
+Most API calls hit `${NEXT_PUBLIC_API_URL}` via Axios wrappers.
 
-## Feature Modules
+### Auth / user
+- `POST /auth/log-in`
+- `POST /auth/register`
+- `POST /auth/log-in/telegram`
+- `GET /auth/check-account-telegram/:telegramId`
+- `GET /user/profile`
+- `PUT /user/profile`
+- `PUT /user/update-country`
+- `POST /auth/firebase` (phone verification flow)
 
-Each feature in `src/features/` contains domain-specific components and logic:
+### Offers / discovery
+- `GET /offer/banner-home`
+- `GET /offer/extra`
+- `GET /offer/extra-point`
+- `GET /offer?category=...&search=...&limit=...&page=...`
+- `GET /offer/:id`
+- `GET /offer/get-coupon-id/:id`
+- `GET /offer/get-category/list`
+- `GET /offer/favorite/:page/:limit`
+- `POST /offer/favorite/:offer_id`
+- `POST /involve/create-affiliate`
 
-| Feature | Path | Key Components | Description |
-|---------|------|----------------|-------------|
-| **Home** | `features/home/` | Banner, Trending, Popular, Special, Extra, CategoryHome | Homepage sections |
-| **Auth** | `features/auth/` | Login forms, registration flow | Authentication UI |
-| **Shop** | `features/shop/` | Shop listing, detail page | Merchant browsing |
-| **Quest** | `features/quest/` | Ranking table, point tracking | Gamification system |
-| **Wallet** | `features/wallet/` | Wallet view, balance display | Crypto wallet UI |
-| **Profile** | `features/profile/` | Settings, favorites, cashback history | User profile management |
-| **Category** | `features/category/` | Category grid, filtered listings | Category browsing |
-| **Referral** | `features/referral/` | Referral link, invite friends | Referral system |
-| **Search** | `features/search/` | Search bar, results | Global search |
-| **Subscription** | `features/subscription/` | Subscription plans | Premium features |
-| **Transaction** | `features/transaction/` | Transaction history | Financial records |
+### Wallet / withdraw
+- `POST /withdraw/check`
+- `POST /withdraw/check-my-cashback`
+- `POST /withdraw/list-check`
+- `GET /withdraw?search=&limit=&page=`
+- `POST /withdraw/signature`
+- `POST /withdraw`
+- `POST /withdraw/bank-transfer`
+- `GET /withdraw/methods-list`
+- `GET /withdraw/methods/:id`
+- `POST /withdraw/methods`
+- `PATCH /withdraw/methods/:id`
+- `GET /withdraw/banks`
 
----
+### Quest / referral / points
+- `GET /point/check-points/:start/:end`
+- `GET /point/my-quest-list/:start/:end`
+- `GET /point/referral-list`
 
-## API Integration
+### Internal Next.js API routes
+- `GET /api/countries` -> proxies REST Countries and sorts by common name.
+- `GET /api/hello` -> simple text response.
 
-### Architecture
+## 6) Critical User Flows
 
-```
-Component → useQuery/useMutation → fetcher → Axios Client → Backend API
-                                       ↑
-                              Auth interceptor
-                              (Bearer token)
-```
+### 6.1 Login Flow (Google/X/Facebook)
 
-### Axios Client (`src/lib/axios/client.ts`)
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant UI as LoginComponent
+  participant FB as Firebase Auth
+  participant NA as NextAuth (firebase provider)
+  participant API as GoGoCash API
 
-```typescript
-// Base URL from environment
-const client = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL });
-
-// Request interceptor: attach JWT token
-client.interceptors.request.use(async (config) => {
-  const session = await getSession();
-  if (session?.user?.access_token) {
-    config.headers.Authorization = `Bearer ${session.user.access_token}`;
-  }
-  return config;
-});
-
-// Response interceptor: handle token expiry
-client.interceptors.response.use(null, (error) => {
-  // Detect JWT expiry → signOut()
-});
+  U->>UI: Click social login
+  UI->>FB: signInWithPopup(...)
+  FB-->>UI: Firebase ID token
+  UI->>NA: signIn("firebase", {jwt, pathname, country,...})
+  NA->>API: /auth/log-in or /auth/register
+  API-->>NA: app token + user profile
+  NA-->>UI: session established (JWT strategy)
+  UI->>UI: redirect to home
 ```
 
-### Fetcher Functions (for TanStack Query)
+### 6.2 Protected Profile Route Flow
 
-```typescript
-fetcher(url)              // GET request
-fetcherPost(url, config)  // POST request  
-fetcherPut(url, config)   // PUT request
-```
+1. User navigates to any route in `src/app/[locale]/(profile)/*`.
+2. `AuthGuard` reads `useSession()` status.
+3. If unauthenticated -> redirect `/login`.
+4. If authenticated -> render profile layout + route content.
 
-### Service Layer (`src/lib/services/`)
+### 6.3 Web3 Withdraw Flow
 
-| Service | Endpoints |
-|---------|-----------|
-| `auth.ts` | `POST /auth/sign-in`, `POST /auth/log-in`, `POST /auth/register`, `PUT /user/update-country` |
-| `offer.ts` | `POST /offer/favorite/{offer_id}` |
-| `withdraw.ts` | `POST /withdraw/methods`, `PATCH /withdraw/methods/{_id}` |
-| `detail.ts` | `GET /offer/{id}` |
+1. Load withdraw summary from `/withdraw/check`.
+2. Ensure wallet is connected (MetaMask) and on selected chain.
+3. Request backend signature: `POST /withdraw/signature`.
+4. Execute on-chain `withdrawCashback(...)` using chain-specific ABI/address.
+5. On success, persist withdraw history with `POST /withdraw`.
+6. Refresh wallet/check state.
 
-### React Query Configuration (`src/lib/query/queryClient.ts`)
+## 7) Environment Variables
 
-```typescript
-defaultOptions: {
-  queries: {
-    refetchOnWindowFocus: false,   // Don't spam API on tab focus
-    refetchOnMount: false,         // Use cached data
-    refetchOnReconnect: false,     // Don't refetch on network restore
-    staleTime: 0,                  // Data considered stale immediately
-  }
-}
-```
+Copy `.env.example` to `.env.local` before running the app locally.
 
----
+## Required for local development
 
-## Analytics System
-
-A comprehensive, privacy-aware analytics system tracking user behavior across GA4, Meta Pixel, and GTM.
-
-### Architecture
-
-```
-┌─────────────────────────────────────┐
-│        AnalyticsBootstrap            │  ← Server-rendered <script> tags
-│  (GA4 gtag.js in <head>)            │     for Google verification
-└───────────────┬─────────────────────┘
-                │
-┌───────────────▼─────────────────────┐
-│        AnalyticsProvider             │  ← Client-side tracking provider
-│                                      │
-│  • Auto page_viewed on route change │
-│  • UTM attribution capture          │
-│  • User identification (hashed)     │
-│  • Session management               │
-│  • Consent handling                 │
-└───────────────┬─────────────────────┘
-                │
-┌───────────────▼─────────────────────┐
-│           tracker.ts                 │
-│                                      │
-│  track(event) → dataLayer.push()    │
-│  identify(user) → hash PII          │
-│  setConsent() → localStorage        │
-│  initializeAnalytics() → load GTM   │
-└───────────────┬─────────────────────┘
-                │
-        ┌───────┴──────────┐
-        ▼                  ▼
-   ┌─────────┐      ┌──────────┐
-   │   GTM   │      │  GA4     │
-   │  (tags) │      │ (direct) │
-   └─────────┘      └──────────┘
-```
-
-### Event Types
-
-| Event | When Fired | Key Data |
-|-------|-----------|----------|
-| `page_viewed` | Route change | pathname, route_name, page_type, locale |
-| `login_completed` | After login | auth_provider, method |
-| `sign_up_completed` | After registration | auth_provider, method |
-| `merchant_detail_viewed` | Shop detail page | merchant_id |
-| `merchant_link_clicked` | Click affiliate link | merchant_id, offer_id |
-| `cashback_claim_confirmed` | Cashback claimed | amount |
-| `quest_started` | Quest begins | quest_id |
-| `quest_completed` | Quest finished | quest_id, points |
-| `wallet_connected` | Wallet linked | wallet_type |
-| `onboarding_step_completed` | Onboarding step | step_number |
-
-### Privacy Features
-- **PII Sanitization**: Email, phone, wallet addresses stripped from payloads
-- **SHA-256 Hashing**: User identifiers hashed before sending to analytics
-- **Consent-Gated**: Marketing tracking only fires after user consent (180-day TTL)
-- **Attribution**: First-touch and current-touch UTM parameters stored in sessionStorage
-
-### Configuration
-
-| Env Var | Purpose |
-|---------|---------|
-| `NEXT_PUBLIC_ANALYTICS_ENABLED` | Master switch for all analytics |
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | Base URL for backend API used by Axios client |
+| `NEXTAUTH_SECRET` | NextAuth JWT/session signing secret |
+| `NEXT_PUBLIC_ANALYTICS_ENABLED` | Kill switch for GTM/GA4/Meta tracking |
 | `NEXT_PUBLIC_GTM_ID` | Google Tag Manager container ID |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | GA4 measurement ID (direct gtag.js) |
-| `NEXT_PUBLIC_META_PIXEL_ID` | Meta/Facebook Pixel ID |
-| `NEXT_PUBLIC_META_USER_SALT` | Salt for hashing user data |
-| `NEXT_PUBLIC_ANALYTICS_DEBUG` | Enable debug logging |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | GA4 property ID used by GTM and direct config fallback |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase client SDK |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase client SDK |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase client SDK |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase client SDK |
+| `NEXT_PUBLIC_FRONTEND_URL` | Used in Telegram/referral links and redirects |
+| `NEXT_PUBLIC_TELEGRAM_BOT_TOKEN` | Telegram OAuth flow (`LoginComponent`) |
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Telegram widget (`TelegramLogin`) |
+| `NEXT_PUBLIC_CROSSMINT_API_KEY` | Crossmint provider initialization |
+| `NEXT_PUBLIC_CROSSMINT_COLLECTION_ID` | Subscription checkout collection locator |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel ID (default: `207487147928890`). Used by `MetaPixel.tsx` and `metaPixel.ts` |
+| `NEXT_PUBLIC_META_USER_SALT` | Salt for hashing user identifiers before analytics dispatch |
+| `NEXT_PUBLIC_ANALYTICS_DEBUG` | Enables verbose console logging for analytics + Meta Pixel events |
 
----
+## Required for Web3 withdrawal
 
-## Internationalization (i18n)
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_CHAIN_ID_WITHDRAW_POLYGON` | Polygon chain id |
+| `NEXT_PUBLIC_CHAIN_ID_WITHDRAW_BNB` | BNB chain id |
+| `NEXT_PUBLIC_CHAIN_ID_WITHDRAW_SONIC` | Sonic chain id |
+| `NEXT_PUBLIC_CHAIN_ID_WITHDRAW_CELO` | Celo chain id |
+| `NEXT_PUBLIC_CONTRACT_WITHDRAW_ADDRESS_POLYGON` | Polygon contract address |
+| `NEXT_PUBLIC_CONTRACT_WITHDRAW_ADDRESS_BNB` | BNB contract address |
+| `NEXT_PUBLIC_CONTRACT_WITHDRAW_ADDRESS_SONIC` | Sonic contract address |
+| `NEXT_PUBLIC_CONTRACT_WITHDRAW_ADDRESS_CELO` | Celo contract address |
 
-### Setup
+## 8) Local Development
 
-| File | Purpose |
-|------|---------|
-| `next-intl.config.ts` | Locale definitions: `['th', 'en']`, default: `'th'` |
-| `src/i18n/routing.ts` | Route configuration with `localePrefix: 'as-needed'` |
-| `src/i18n/navigation.ts` | Locale-aware `Link`, `useRouter`, `redirect` |
-| `middleware.ts` | Intercepts requests to inject locale |
-| `src/messages/{en,th,jp}.json` | Translation strings |
-
-### Usage in Components
-
-```typescript
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
-
-function MyComponent() {
-  const t = useTranslations('home');
-  return <Link href="/shop">{t('viewAll')}</Link>;
-}
-```
-
-### Adding a New Language
-
-1. Add locale to `next-intl.config.ts` and `src/i18n/routing.ts`
-2. Create `src/messages/{lang}.json` with all translation keys
-3. The middleware will automatically handle routing
-
----
-
-## Web3 / Crossmint Integration
-
-Crossmint provides **smart wallet** creation and management:
-
-```
-┌──────────────────┐     ┌──────────────────┐
-│ CrossmintProvider │────▶│  Smart Wallet     │
-│ (SDK Init)        │     │  (EVM-based)      │
-└────────┬─────────┘     └──────────────────┘
-         │
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ CrossmintAuth    │────▶│  Login Methods    │
-│ Provider          │     │  email, google,   │
-│                   │     │  twitter, web3    │
-└────────┬─────────┘     └──────────────────┘
-         │
-         ▼
-┌──────────────────┐
-│ useCrossmint     │
-│ Login (hook)     │
-│                  │
-│ • jwt token      │
-│ • user data      │
-│ • wallet address │
-│ • login state    │
-└──────────────────┘
-```
-
-### Key Files
-
-| File | Purpose |
-|------|---------|
-| `src/lib/crossmint/SettingCrossmint.tsx` | SDK provider init, ready signal |
-| `src/providers/CrossmintReadyContext.tsx` | Ready state shared via context |
-| `src/providers/CrossmintLoginContext.tsx` | Login state shared via context |
-| `src/hooks/useCrossmintLogin.ts` | Auth flow + wallet management |
-| `src/hooks/useSafeCrossmint.ts` | Safe SDK access (SSR-safe) |
-| `src/constants/abi/` | Smart contract ABIs for blockchain interactions |
-
----
-
-## Styling Guide
-
-### Stack
-- **Tailwind CSS 4** — Utility-first CSS (primary)
-- **Material-UI 7** — Complex components (DataGrid, icons)
-- **Emotion** — CSS-in-JS (MUI dependency)
-- **DM Sans** — Primary font via `next/font/google`
-
-### CSS Variables (defined in `globals.css`)
-```css
---background    /* Page background */
---foreground    /* Text color */
---text-color    /* Secondary text */
-```
-
-### Utility Function
-```typescript
-import { cn } from '@/lib/utils';
-
-// Merges Tailwind classes with conflict resolution
-<div className={cn('p-4 bg-white', isActive && 'bg-blue-500')} />
-```
-
-### Responsive Breakpoints
-| Breakpoint | Width | Usage |
-|-----------|-------|-------|
-| `sm` | 640px | Small phones |
-| `md` | 768px | Tablets |
-| `lg` | 1024px | Desktop |
-| `xl` | 1280px | Large desktop |
-| `2xl` | 1536px | Wide screens |
-
----
-
-## Key Libraries
-
-| Library | Version | Purpose |
-|---------|---------|---------|
-| `next` | 16.0.1 | React framework with SSR |
-| `react` | 19 | UI library |
-| `typescript` | 5 | Type safety |
-| `tailwindcss` | 4 | Utility-first CSS |
-| `@mui/material` | 7.3.5 | Component library |
-| `next-auth` | 4.24.13 | Session management |
-| `firebase` | 12.6.0 | Client-side authentication |
-| `@crossmint/client-sdk-react-ui` | 1.19.2 | Web3 wallet SDK |
-| `ethers` | 6.15.0 | Blockchain interactions |
-| `@tanstack/react-query` | 5.90.8 | Server state management |
-| `axios` | 1.13.2 | HTTP client |
-| `next-intl` | 4.5.5 | Internationalization |
-| `swiper` | 12.0.3 | Touch carousel |
-| `react-hot-toast` | 2.6.0 | Toast notifications |
-| `react-error-boundary` | 6.0.0 | Error boundaries |
-| `libphonenumber-js` | 1.12.31 | Phone number validation |
-
----
-
-## Deployment
-
-### Docker Build
+### Install
 
 ```bash
-# Build image
-docker build -t gogocash-app \
-  --build-arg NEXT_PUBLIC_ANALYTICS_ENABLED=true \
-  --build-arg NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX \
-  --build-arg NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX \
-  .
-
-# Run container
-docker run -p 3000:3000 gogocash-app
+cp .env.example .env.local
+npm install
 ```
 
-### Dockerfile Overview
-```dockerfile
-# Multi-stage build for minimal image size
-FROM node:20-alpine AS base      # Base image
-FROM base AS deps                # Install node_modules
-FROM base AS builder             # Build Next.js app
-FROM base AS runner              # Production runtime
+### Run
 
-# Security: runs as non-root user
-USER nextjs
-EXPOSE 3000
+```bash
+npm run dev
 ```
 
-### Important Notes
-- `.env*` files are **gitignored** — env vars must be passed as Docker build args or runtime env
-- The `NEXT_PUBLIC_GA_MEASUREMENT_ID` must be available at **build time** (baked into client JS)
-- `output: 'standalone'` is commented out due to next-intl middleware compatibility
+### Lint
 
----
-
-## Data Models
-
-### User
-```typescript
-interface User {
-  _id: string;
-  email: string;
-  username: string;
-  address: string;           // Wallet address
-  auth_provider: "google" | "twitter" | "firebase" | "telegram";
-  mobile?: string;
-  birthdate?: string;
-  gender?: string;
-  region?: string;
-  id_telegram?: string;
-  country?: string;
-}
+```bash
+npm run lint
 ```
 
-### Offer (Merchant)
-```typescript
-interface DataOffer {
-  _id: string;
-  offer_id: number;
-  merchant_id: number;
-  offer_name: string;
-  logo: string;
-  banner: string;
-  commissions: { [currency: string]: number }[];
-  tracking_link: string;
-  validation_terms: number;   // Days to validate conversion
-  disabled: boolean;
-  extra_point?: number;
-}
+### Build and start
+
+```bash
+npm run build
+npm run start
 ```
 
-### Withdrawal
-```typescript
-interface ResponseWithdrawCheck {
-  totalPayoutUSD: number;
-  totalPayoutTHB: number;
-  feeAmount: number;
-  netAmount: number;
-  data: DataWithdrawCheck[];
-  fee: FeeData;
-}
-```
+## 9) Docker Notes
 
-### Quest / Ranking
-```typescript
-interface QuestRankResponse {
-  _id: string;
-  user_id: string;
-  point: number;
-  unique_merchants: number[];
-  extra_point_received: number;
-  rank?: number;
-}
-```
+Current `Dockerfile` uses a multi-stage build:
+- Builder installs dependencies and runs `yarn build`.
+- Runner starts app via `npm start`.
+
+Make sure lockfile/package manager strategy is consistent in CI/CD (current file mixes `yarn` and `npm` commands).
+
+## 10) Development Playbook (How To Add Features Fast)
+
+1. Add route under `src/app/[locale]/...`.
+2. Implement domain UI under `src/features/<domain>/component`.
+3. Add/extend TypeScript interfaces in `src/interfaces`.
+4. Add API calls using `fetcher`/`fetcherPost`/services in `src/lib/services`.
+5. Use React Query for server state and cache keys scoped by domain.
+6. If route requires login, place it under `(profile)` or add `AuthGuard`.
+7. Add translation keys in `src/messages/en.json` and `src/messages/th.json`.
+8. Keep locale routing config consistent across `src/i18n/*` and `next-intl.config.ts`.
+
+## 11) Technical Notes / Caveats
+
+- Quest API date range in `QuestPage` is currently hardcoded (`2026-02-01` to `2026-02-28`).
+- Two auth configs exist (`authFirebase.ts` active, `auth.ts` legacy). Keep provider ids and hooks aligned when refactoring.
+- Crossmint readiness and login context are globally mounted even though Firebase is the active NextAuth provider.
+- Locale config defaults differ between `src/i18n/routing.ts` and `next-intl.config.ts`.
+- `src/messages/jp.json` exists but `jp` is not included in active locale routing.
+
+## 12) Quick File Index For New Contributors
+
+- Provider stack: `src/providers/ProviderDefault.tsx`
+- Auth config: `src/lib/authFirebase.ts`
+- API client/interceptors: `src/lib/axios/client.ts`
+- Firebase browser auth: `src/lib/firebaseClient.ts`
+- Crossmint setup: `src/lib/crossmint/SettingCrossmint.tsx`
+- Protected layout: `src/app/[locale]/(profile)/layout.tsx`
+- Login entry: `src/features/auth/component/LoginComponent.tsx`
+- Withdraw hook (Web3): `src/hooks/useWithdrawWeb3.ts`
+- Withdraw UI: `src/features/wallet/component/MyWalletWithdraw.tsx`
+- Transaction/history UI: `src/features/transaction/component/WalletTransaction.tsx`
+- i18n routing: `src/i18n/routing.ts`
+- **GA4/GTM analytics**: `src/lib/analytics.ts`, `src/components/analytics/GoogleTagManager.tsx`
+- **Meta Pixel tracking**: `src/lib/metaPixel.ts`, `src/components/analytics/MetaPixel.tsx`
+- **Cookie consent**: `src/hooks/useConsent.ts`, `src/components/consent/CookieConsent.tsx`

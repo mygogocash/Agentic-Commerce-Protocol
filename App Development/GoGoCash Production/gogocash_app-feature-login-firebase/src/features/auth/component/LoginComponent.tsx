@@ -15,10 +15,17 @@ import TelegramLogin from "../common/TelegramLogin";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
 import client from "@/lib/axios/client";
-import { setPendingAuthIntent } from "@/lib/analytics";
 import { signIn } from "next-auth/react";
 import { IResponseLogin } from "@/interfaces/auth";
 import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
+import {
+  getAppLocale,
+  getPostHogAnonymousId,
+  getPostHogDistinctId,
+  POSTHOG_FLAG_KEYS,
+  usePostHogFlagPayload,
+} from "@/lib/posthog";
 declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,7 +45,17 @@ const LoginComponent = () => {
   const t = useTranslations();
   const pathname = usePathname();
   const [email, setEmail] = useState("");
+  const [verifyCode, setVerifyCode] = useState("");
+
   const [showUpdateEmail, setShowUpdateEmail] = useState(false);
+  const onboardingExperiment =
+    usePostHogFlagPayload<{
+      title?: string;
+      description?: string;
+      google_label?: string;
+      x_label?: string;
+      telegram_label?: string;
+    }>(POSTHOG_FLAG_KEYS.onboardingRegistration, {});
 
   const params = useSearchParams();
   const referral_id = params.get("referral_id");
@@ -64,17 +81,11 @@ const LoginComponent = () => {
     // const redirectUrl = encodeURIComponent(`${endpoint}/api/telegram`);
     const redirectUrl = `${endpoint}/login`;
 
-    setPendingAuthIntent({
-      type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
-      method: "telegram",
-    });
-
-    window.location.assign(
+    window.location.href =
       `https://oauth.telegram.org/auth?bot_id=${botId}` +
       `&origin=${endpoint}` +
       `&return_to=${redirectUrl}` +
-      `&request_access=write`,
-    );
+      `&request_access=write`;
   }
 
   const checkHasAcc = (telegramId: string) => {
@@ -135,11 +146,15 @@ const LoginComponent = () => {
       signIn("firebase", {
         jwt: res.token,
         email: res.user.email,
-        provider: "telegram",
         referral_id,
         country: selectCountry?.label || "Thailand",
         pathname,
         type: "telegram",
+        locale: getAppLocale(),
+        posthog_distinct_id: getPostHogDistinctId(),
+        posthog_anonymous_id: getPostHogAnonymousId(),
+        auth_flow: res.auth_flow || "login",
+        is_new_user: String(Boolean(res.is_new_user)),
         callbackUrl: "/",
         redirect: true,
       });
@@ -150,6 +165,41 @@ const LoginComponent = () => {
   //   return window?.Telegram;
   // };
 
+  const onSendCodeEmail = () => {
+    client
+      .post("/auth/send-otp", {
+        email,
+      })
+      .then(() => {
+        // Handle success, e.g., show a message to the user
+        toast.success(
+          "Verification code sent to your email. Please check your inbox.",
+        );
+      })
+      .catch((error) => {
+        console.error("Error sending code to email:", error);
+        toast.error("Failed to send verification code. Please try again.");
+        // Handle error, e.g., show an error message to the user
+      });
+  };
+
+  const onVerifyCode = () => {
+    client
+      .post("/auth/verify-otp", {
+        email,
+        otp: verifyCode,
+      })
+      .then(() => {
+        // Handle success, e.g., show a message to the user
+        // toast.success("Verification code verified successfully.");
+        handleLoginTelegram();
+      })
+      .catch((error) => {
+        console.error("Error verifying code:", error);
+        toast.error("Failed to verify code. Please try again.");
+        // Handle error, e.g., show an error message to the user
+      });
+  };
   return (
     <div className="container md:px-0 px-4 mt-6 mb-10 mx-auto">
       <Dialog
@@ -159,7 +209,7 @@ const LoginComponent = () => {
         aria-describedby="modal-modal-description"
         sx={{ " .MuiPaper-root": { borderRadius: "16px" } }}
       >
-        <div className="p-5 flex flex-col gap-5 w-[320px]">
+        <div className="p-5 flex flex-col gap-5 w-[400px]">
           <p className="text-black">
             {showUpdateEmail
               ? `Update Email for Telegram Account`
@@ -167,12 +217,31 @@ const LoginComponent = () => {
           </p>
 
           {showUpdateEmail && (
-            <Input
-              placeholder="Email"
-              onChange={(event) => {
-                setEmail(event.target.value);
-              }}
-            />
+            <>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Email"
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                  }}
+                />
+                <Button
+                  onClick={() => {
+                    onSendCodeEmail();
+                  }}
+                >
+                  <p className="w-[65px]">Get Code</p>
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Verification Code"
+                  onChange={(event) => {
+                    setVerifyCode(event.target.value);
+                  }}
+                />
+              </div>
+            </>
           )}
 
           <div className="flex items-center gap-2">
@@ -191,7 +260,11 @@ const LoginComponent = () => {
             <Button
               fullWidth
               onClick={() => {
-                handleLoginTelegram();
+                if (showUpdateEmail) {
+                  onVerifyCode();
+                } else {
+                  handleLoginTelegram();
+                }
               }}
             >
               Login
@@ -217,11 +290,12 @@ const LoginComponent = () => {
           />
           <div className="flex items-center justify-center flex-col">
             <h1 className="text-[#00B14F] text-[24px] md:text-[30px] font-semibold">
-              {pathname === "/login" ? "Login" : "Register"} to Your Account
+              {onboardingExperiment.title ||
+                `${pathname === "/login" ? "Login" : "Register"} to Your Account`}
             </h1>
             <p className="text-[#6B7280] text-center text-[14px] md:text-[16px] mt-2 mb-6">
-              Access your personalized dashboard and manage your preferences by
-              logging into your account.
+              {onboardingExperiment.description ||
+                "Access your personalized dashboard and manage your preferences by logging into your account."}
             </p>
           </div>
 
@@ -257,12 +331,18 @@ const LoginComponent = () => {
           <ButtonLogin
             handleLogin={handleLoginGoogle}
             icon="/social/google.png"
-            text={`${pathname === "/login" ? "Login" : "Register"} with Google`}
+            text={
+              onboardingExperiment.google_label ||
+              `${pathname === "/login" ? "Login" : "Register"} with Google`
+            }
           />
           <ButtonLogin
             handleLogin={handleLoginX}
             icon="/social/twitter.png"
-            text={`${pathname === "/login" ? "Login" : "Register"} with X`}
+            text={
+              onboardingExperiment.x_label ||
+              `${pathname === "/login" ? "Login" : "Register"} with X`
+            }
           />
 
           <ButtonLogin
@@ -270,9 +350,10 @@ const LoginComponent = () => {
               loginWithTelegram();
             }}
             icon="/social/telegram.png"
-            text={`${
-              pathname === "/login" ? "Login" : "Register"
-            } with Telegram`}
+            text={
+              onboardingExperiment.telegram_label ||
+              `${pathname === "/login" ? "Login" : "Register"} with Telegram`
+            }
           />
           <div className="hidden">
             <TelegramLogin />

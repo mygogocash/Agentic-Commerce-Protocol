@@ -17,7 +17,6 @@ import toast from "react-hot-toast";
 import BoardProfile from "./BoardProfile";
 import { ResponseWithdrawCheckMyCashback } from "@/interfaces/auth";
 import { ResponseWithdrawCheck } from "@/interfaces/withdraw";
-import { track } from "@/lib/analytics";
 
 const gender = ["Male", "Female", "Other"];
 const ProfileInfo = () => {
@@ -84,7 +83,6 @@ const ProfileInfo = () => {
             user: { ...session?.user, ...res },
           });
           toast.success("Profile updated successfully");
-          track("onboarding_step_completed", { step_number: 1, step_name: "profile_setup" });
         }
       } else {
         toast.error("Please fill all fields");

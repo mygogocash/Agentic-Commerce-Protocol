@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AnalyticsBootstrap from "@/components/analytics/AnalyticsBootstrap";
 import ProviderDefault from "@/providers/ProviderDefault";
 import { METADATA } from "@/constants/Metadata";
 import { dmSans } from "@/lib/utils";
+import {
+  GoogleTagManagerHead,
+  GoogleTagManagerNoScript,
+} from "@/components/analytics/GoogleTagManager";
+import MetaPixel from "@/components/analytics/MetaPixel";
+import CookieConsent from "@/components/consent/CookieConsent";
 
 export const metadata: Metadata = {
   title: METADATA.title,
   description: METADATA.description,
+  applicationName: "GoGoCash",
+  manifest: "/site.webmanifest",
   icons: {
-    icon: METADATA.icon,
-    apple: METADATA.icon,
-    other: [
-      { rel: "apple-touch-icon", url: METADATA.icon },
-      { rel: "shortcut icon", url: METADATA.icon },
-    ],
+    shortcut: ["/favicon.ico"],
   },
   openGraph: {
     title: METADATA.title,
@@ -52,14 +54,17 @@ export default async function RootLayout({
   return (
     <html lang={"en"}>
       <head>
-        <AnalyticsBootstrap />
         <meta
           name="facebook-domain-verification"
           content="4tqyqamr33ektym9ra9hs4iivsjfy2"
         />
+        <GoogleTagManagerHead />
+        <MetaPixel />
       </head>
       <body className={`${dmSans.variable} ${dmSans.className} antialiased`}>
+        <GoogleTagManagerNoScript />
         <ProviderDefault>{children}</ProviderDefault>
+        <CookieConsent />
       </body>
     </html>
   );

@@ -1,15 +1,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-ARG NEXT_PUBLIC_ANALYTICS_ENABLED=false
-ARG NEXT_PUBLIC_GTM_ID=
-ARG NEXT_PUBLIC_ANALYTICS_DEBUG=false
+RUN apk add --no-cache python3 make g++
 
-ENV NEXT_PUBLIC_ANALYTICS_ENABLED=$NEXT_PUBLIC_ANALYTICS_ENABLED
-ENV NEXT_PUBLIC_GTM_ID=$NEXT_PUBLIC_GTM_ID
-ENV NEXT_PUBLIC_ANALYTICS_DEBUG=$NEXT_PUBLIC_ANALYTICS_DEBUG
-
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json yarn.lock ./
 RUN yarn install --frozen-lockfile 
 
 COPY . .

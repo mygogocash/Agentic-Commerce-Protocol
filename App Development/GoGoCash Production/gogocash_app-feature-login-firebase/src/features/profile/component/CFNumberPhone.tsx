@@ -8,7 +8,6 @@ import { confirmOtp, loginWithFirebase } from "../firebase/fc";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import OtpInput from "@/components/common/OtpInput";
-import { track } from "@/lib/analytics";
 const CFNumberPhone = () => {
   const router = useRouter();
   const { update, data: session } = useSession();
@@ -31,7 +30,6 @@ const CFNumberPhone = () => {
       .then((res) => {
         if (!res) return;
         toast.success("Saved successfully");
-        track("onboarding_step_completed", { step_number: 3, step_name: "phone_confirmed" });
         update({
           ...session,
           user: { ...session?.user, ...res.user },

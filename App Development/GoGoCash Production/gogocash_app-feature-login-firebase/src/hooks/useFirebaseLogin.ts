@@ -1,13 +1,13 @@
 "use client";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { OptionsCountries } from "@/interfaces/country";
-import { setPendingAuthIntent } from "@/lib/analytics";
 import { auth, googleProvider } from "@/lib/firebaseClient";
 import { signInWithPopup, FacebookAuthProvider, TwitterAuthProvider } from "firebase/auth";
 import { signIn } from "next-auth/react";
 import React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { trackMetaCompleteRegistration } from "@/lib/metaPixel";
 
 const useFirebaseLogin = () => {
   // Implementation of the hook
@@ -43,14 +43,9 @@ const useFirebaseLogin = () => {
       const result = await signInWithPopup(auth, googleProvider);
       if (result.user) {
         const token = await result.user.getIdToken();
-        setPendingAuthIntent({
-          type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
-          method: "google",
-        });
         signIn("firebase", {
           jwt: token,
           email: result.user.email,
-          provider: "google",
           referral_id,
           country: selectCountry?.label || "Thailand",
           pathname,
@@ -63,6 +58,10 @@ const useFirebaseLogin = () => {
             }
             toast.error("Login failed. Please register.");
           } else {
+            // REQ-003: Meta Pixel CompleteRegistration
+            if (pathname?.includes("/register")) {
+              trackMetaCompleteRegistration({ status: true });
+            }
             handleModalAfterLogin();
             router.push("/");
           }
@@ -81,14 +80,9 @@ const useFirebaseLogin = () => {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
         const token = await result.user.getIdToken();
-        setPendingAuthIntent({
-          type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
-          method: "twitter",
-        });
         signIn("firebase", {
           jwt: token,
           email: result.user.email,
-          provider: "twitter",
           referral_id,
           pathname,
           country: selectCountry?.label || "Thailand",
@@ -107,6 +101,10 @@ const useFirebaseLogin = () => {
               );
             }
           } else {
+            // REQ-003: Meta Pixel CompleteRegistration
+            if (pathname?.includes("/register")) {
+              trackMetaCompleteRegistration({ status: true });
+            }
             handleModalAfterLogin();
             router.push("/");
           }
@@ -128,14 +126,9 @@ const useFirebaseLogin = () => {
       
       if (result.user) {
         const token = await result.user.getIdToken();
-        setPendingAuthIntent({
-          type: pathname?.includes("register") ? "sign_up_completed" : "login_completed",
-          method: "facebook",
-        });
         signIn("firebase", {
           jwt: token,
           email: result.user.email,
-          provider: "facebook",
           referral_id,
           pathname,
           country: selectCountry?.label || "Thailand",
@@ -154,6 +147,10 @@ const useFirebaseLogin = () => {
               );
             }
           } else {
+            // REQ-003: Meta Pixel CompleteRegistration
+            if (pathname?.includes("/register")) {
+              trackMetaCompleteRegistration({ status: true });
+            }
             handleModalAfterLogin();
             router.push("/");
           }
