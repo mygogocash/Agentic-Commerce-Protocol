@@ -28,6 +28,21 @@ if (!globalForDb.mockSessions) globalForDb.mockSessions = [];
 const users = globalForDb.mockUsers;
 const sessions = globalForDb.mockSessions;
 
+const secureRandomHex = (byteLength = 16): string => {
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi?.getRandomValues) {
+    const bytes = new Uint8Array(byteLength);
+    cryptoApi.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+      ''
+    );
+  }
+
+  return `${Date.now().toString(36)}_${(users.length + 1).toString(36)}`;
+};
+
+const createMockUserId = (): string =>
+  `user_${globalThis.crypto?.randomUUID?.() ?? secureRandomHex()}`;
 
 export const db = {
   users: {
@@ -36,7 +51,7 @@ export const db = {
     },
     create: async (wallet_address: string): Promise<User> => {
       const newUser: User = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: createMockUserId(),
         wallet_address,
         joined_at: new Date().toISOString(),
         go_points: 100, // Bonus for new users
@@ -98,7 +113,7 @@ export const db = {
         }
 
         return user;
-      } catch (e) {
+      } catch {
         // Not a valid JSON token, fallback to memory check (legacy/local)
         const session = sessions.find((s) => s.token === token);
         if (session && new Date(session.expires_at) > new Date()) {
