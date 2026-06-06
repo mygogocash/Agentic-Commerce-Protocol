@@ -33,9 +33,6 @@ export async function GET(request: Request) {
         // In a real app, query DB for transactions by user_id
         // Here we generate some dummy data for the user
 
-        // Deterministic mock data based on user ID for consistency
-        const userIdNum = user.id.length;
-
         const summary = {
             pending_amount: 12.50,
             confirmed_amount: 5.00,
